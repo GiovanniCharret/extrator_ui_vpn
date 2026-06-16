@@ -1,0 +1,36 @@
+# --- Saídas e dados não versionáveis (ver CLAUDE.md) ---
+.venv/
+output/
+vpn_resultados/
+minhas_notas/
+bug_fix/
+
+# Documentos HTML gerados (derivados dos .md — regeneráveis)
+*.html
+
+# Pacotes/Resultados do ciclo DEV<->VPN (build artifacts)
+pacote_*.zip
+resultados_*.zip
+*.zip.txt
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+
+# --- Sistema operacional ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
