@@ -166,9 +166,30 @@ depois do roteiro 2 passar.
 > Em falha: o CLI grava `output\inspecao\exportar_falha_*` (dump+screenshot) e o log com pixels.
 > Traga o zip mesmo assim. A ordem real imprimir↔salvar↔progresso será confirmada por esses logs.
 
+## Roteiro 4 — Descoberta do dropdown e mapeamento (F2) · `pacote_v9.zip`
+
+**Objetivo:** enumerar os nomes **reais** do dropdown "Programa" e gerar o esqueleto de
+`config/programas_map.json`. Depois **você preenche à mão** o `programa` de cada contrato
+vigente (usando o campo `sugestao` como pista) e o teste [AUTO] valida.
+
+**Antes:** extrair `pacote_v9.zip` por cima + LEIA-ME. LNC aberto na tela inicial (uma instância).
+
+| # | Passo | O que esperar |
+|---|---|---|
+| 4.1 | `.venv\Scripts\python.exe -m scripts.gerar_mapeamento` | Navega até o painel, marca Programa, lê o dropdown. Gera `config\programas_dropdown.json` (lista crua) e `config\programas_map.json` (esqueleto). Log: `OK: preencha 'programa'...` |
+| 4.2 | `powershell -ExecutionPolicy Bypass -File deploy\coletar.ps1` → trazer o zip para `vpn_resultados\` | O zip leva `config\` (os 2 JSONs) + logs. |
+
+**No DEV (eu + você), depois da viagem:**
+| # | Passo | O que esperar |
+|---|---|---|
+| 4.3 | Copiar `config\programas_dropdown.json` e `programas_map.json` do zip para `config\` no DEV | — |
+| 4.4 | **Você preenche** o campo `programa` de cada contrato no `programas_map.json` (texto EXATO do dropdown; a `sugestao` é só pista, confira 1:1) | todos os vigentes com `programa` não vazio |
+| 4.5 | `.venv\Scripts\python.exe -m pytest tests\test_f2_mapeamento.py -v` | `test_mapeamento_real_quando_preenchido` deixa de pular e fica **verde** (todo vigente tem programa; existe no dropdown; sem duplicata) |
+
+> Em falha do 4.1: o script grava `output\inspecao\gerar_mapeamento_falha_*` + log com pixels.
+
 ## Roteiros futuros (quando as fases fecharem)
 
-- **Roteiro 4 (F2):** rodar `gerar_mapeamento.py`, validar/preencher `config/programas_map.json`.
 - **Roteiro 5 (F5):** `--dry-run` → 2 contratos → interromper/retomar → rodada completa.
 - **Roteiro 6 (F6):** `.\run.ps1` em PowerShell limpo.
 

@@ -6,7 +6,8 @@ Automação de UI (pywinauto/pyautogui) do sistema legado **LPT — Luz Para Tod
 Delphi/VCL — `TfrmPrincipal`, confirmado na F1; **não** é VB6 — `Z:\LNC\LNC.exe`) para
 exportar relatórios "Projetos Executados" em PDF (Microsoft Print to PDF)
 e consolidar ODI/UF/Município em CSV. O laço é dirigido por `base_contratos.json`
-(contratos com `vigente != "Encerrado"`).
+(contratos com `vigente != "Encerrado"` **e** que **não** sejam `ECM` — estes são
+contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`).
 
 ## Arquitetura (visão rápida)
 
