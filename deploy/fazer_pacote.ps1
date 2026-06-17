@@ -19,6 +19,7 @@ $itens = @(
     "scripts",
     "tests",
     "deploy",
+    "run.ps1",
     "base_contratos.json",
     "requirements.txt",
     "planning\TESTES.md"
@@ -38,6 +39,11 @@ foreach ($item in $existentes) {
 # remove caches do Python (lixo de DEV)
 Get-ChildItem $stage -Recurse -Directory -Filter "__pycache__" |
     Remove-Item -Recurse -Force -Confirm:$false
+
+# NUNCA empacotar o estado da rodada: ele vive na VPN e nao pode ser sobrescrito
+# por um eventual estado gerado no DEV (ex.: smoke sem LNC).
+Get-ChildItem $stage -Recurse -File -Filter "estado_execucao.json" |
+    Remove-Item -Force -Confirm:$false
 
 # --- renomeia scripts para passar no filtro de e-mail ------------------------
 $renomeados = Get-ChildItem $stage -Recurse -File |

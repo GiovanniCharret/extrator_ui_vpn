@@ -16,10 +16,22 @@ from pywinauto import Application  # noqa: F401  (mantido p/ paridade de backend
 from src import config, contratos, lnc_app
 
 
-def caminho_saida(programa_texto: str):
-    """output/pdf/<nome_sanitizado>.pdf (absoluto)."""
-    config.PDF_DIR.mkdir(parents=True, exist_ok=True)
-    return config.PDF_DIR / f"{contratos.sanitizar_nome(programa_texto)}.pdf"
+def caminho_saida(contrato: str):
+    """Devolve o caminho absoluto do PDF de um contrato em output/pdf/.
+
+    Por que existe: centraliza a regra de nome do arquivo (contrato = chave primária,
+    nunca repete) num só lugar, para que a F3 (exportação) e a F5 (retomada/consolidação)
+    derivem exatamente o mesmo caminho a partir do contrato.
+
+    Lógica, do input ao output, em fases:
+      Entrada: contrato (ex.: 'ECO 019/2020').
+      Fase 1 — garante que a pasta output/pdf/ existe (cria se preciso).
+      Fase 2 — sanitiza o contrato em nome de arquivo seguro e monta o caminho.
+      Saída: Path absoluto output/pdf/<contrato_sanitizado>.pdf.
+    """
+    config.PDF_DIR.mkdir(parents=True, exist_ok=True)      # Fase 1: pasta de saída existe
+    nome = f"{contratos.sanitizar_nome(contrato)}.pdf"     # Fase 2: contrato -> nome seguro + .pdf
+    return config.PDF_DIR / nome                           # saída: caminho absoluto do PDF
 
 
 def _esperar_arquivo_estavel(caminho, log: logging.Logger, timeout: int) -> None:
@@ -37,9 +49,14 @@ def _esperar_arquivo_estavel(caminho, log: logging.Logger, timeout: int) -> None
     raise RuntimeError(f"PDF não estabilizou em {timeout}s: {caminho}")
 
 
-def exportar(programa_texto: str, log: logging.Logger, destino=None):
-    """Fluxo completo: navega -> preview -> imprimir -> salvar -> geração -> arquivo estável."""
-    destino = destino or caminho_saida(programa_texto)
+def exportar(programa_texto: str, contrato: str, tipo: str, log: logging.Logger, destino=None):
+    """Fluxo completo: navega -> preview -> imprimir -> salvar -> geração -> arquivo estável.
+
+    `programa_texto` e `tipo` (radio 'Tipo de Projeto') são os DOIS filtros do relatório;
+    `contrato` (chave primária) nomeia o PDF. Se `destino` for None, deriva de
+    `caminho_saida(contrato)` — nome único por contrato.
+    """
+    destino = destino or caminho_saida(contrato)  # nome do PDF vem do contrato, não do programa
     if destino.exists():
         log.info("apagando PDF antigo (evita diálogo de sobrescrita): %s", destino)
         destino.unlink()
@@ -47,6 +64,7 @@ def exportar(programa_texto: str, log: logging.Logger, destino=None):
     app, jp = lnc_app.conectar_ou_abrir(log)
     lnc_app.limpar_estado(app, log)
     lnc_app.navegar_para_painel(app, jp, log)
+    lnc_app.selecionar_tipo(jp, tipo, log)          # radio 'Tipo de Projeto' (sempre, por contrato)
     lnc_app.selecionar_programa(jp, programa_texto, log)
     lnc_app.conferir_filtros_padrao(jp, log)
     preview = lnc_app.abrir_preview(app, log)
@@ -91,14 +109,19 @@ def _cli():
     import traceback
     from pathlib import Path
 
-    p = argparse.ArgumentParser(description="Exporta 1 PDF de um programa.")
-    p.add_argument("--programa", required=True, help="texto EXATO do dropdown")
-    p.add_argument("--saida", default=None, help="caminho do PDF (default: output/pdf/<nome>.pdf)")
+    p = argparse.ArgumentParser(description="Exporta 1 PDF de um contrato (resolve o programa pelo map).")
+    p.add_argument("--contrato", required=True, help="chave em programas_map.json (ex.: 'ECO 019/2020')")
+    p.add_argument("--saida", default=None, help="caminho do PDF (default: output/pdf/<contrato>.pdf)")
     args = p.parse_args()
     log = lnc_app._configurar_log()
-    log.info("=== exportar_pdf --programa %r ===", args.programa)
+    log.info("=== exportar_pdf --contrato %r ===", args.contrato)
     try:
-        exportar(args.programa, log, Path(args.saida) if args.saida else None)
+        import json
+        mapa = json.loads(config.PROGRAMAS_MAP.read_text(encoding="utf-8"))  # contrato -> {programa, tipo}
+        entry = mapa[args.contrato]                                           # entrada do contrato
+        programa = entry["programa"]                                          # texto exato do dropdown
+        tipo = entry.get("tipo", config.TIPO_PROJETO_PADRAO)                  # radio Tipo de Projeto
+        exportar(programa, args.contrato, tipo, log, Path(args.saida) if args.saida else None)
     except Exception:
         log.error("EXPORT FALHOU:\n%s", traceback.format_exc())
         try:

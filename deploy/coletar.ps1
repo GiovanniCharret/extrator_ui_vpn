@@ -1,6 +1,6 @@
 # coletar.ps1 - RODA NA MAQUINA DA VPN, a partir da raiz do projeto.
 # Uso: powershell -ExecutionPolicy Bypass -File deploy\coletar.ps1
-# Zipa output\ (+ config\) em resultados_<timestamp>.zip para trazer de volta ao DEV.
+# Zipa output\ (+ config\ + o estado da rodada) em resultados_<timestamp>.zip.
 
 $ErrorActionPreference = "Stop"
 
@@ -9,6 +9,8 @@ $destino = "resultados_$ts.zip"
 
 $itens = @("output")
 if (Test-Path "config") { $itens += "config" }
+# estado_execucao.json vive em src\ (nao em output\) -> incluir p/ analise no DEV
+if (Test-Path "src\estado_execucao.json") { $itens += "src\estado_execucao.json" }
 
 Compress-Archive -Path $itens -DestinationPath $destino -Force
 

@@ -22,7 +22,12 @@ UFS = {
 }
 
 TOLERANCIA_LINHA = 3  # px de diferença em 'top' para considerar a mesma linha
-RE_ODI = re.compile(r"^\d{6,}$")
+# ODI = código do projeto, sempre na coluna mais à esquerda. É ALFANUMÉRICO: além
+# de numérico (10010263) aparece com letras (ODR136PROJ019A, B0174334,
+# PA2000112LPT130024PA) — VPN 17/06/2026. O regex antigo (^\d{6,}$) descartava
+# silenciosamente esses; agora aceita qualquer token alfanumérico (sem espaço/
+# pontuação). Linhas não-dado seguem barradas pela validação de UF do município.
+RE_ODI = re.compile(r"^[A-Za-z0-9]+$")
 
 
 def _x0_cabecalho(words, texto):
@@ -75,7 +80,7 @@ def extrair_linhas(pdf_path):
         proj_x0, muni_x0, data_x0 = _faixas(doc.pages[0].extract_words())
         for page in doc.pages:
             for linha in _agrupar_linhas(page.extract_words()):
-                # ODI: token 6+ dígitos à esquerda da coluna Projeto
+                # ODI: token alfanumérico à esquerda da coluna Projeto
                 odi = next(
                     (w["text"] for w in linha
                      if _centro(w) < proj_x0 and RE_ODI.match(w["text"])),

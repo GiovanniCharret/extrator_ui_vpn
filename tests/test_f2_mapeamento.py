@@ -39,8 +39,8 @@ def test_validar_mapeamento_ok():
 
     vigentes = {"C1": {}, "C2": {}}
     mapa = {
-        "C1": {"programa": "AES SUL - 2ª Tranche"},
-        "C2": {"programa": "CEEE - 1ª Tranche"},
+        "C1": {"programa": "AES SUL - 2ª Tranche", "tipo": "Eletrificação Rural"},
+        "C2": {"programa": "CEEE - 1ª Tranche", "tipo": "Fonte Alternativa"},
     }
     assert validar_mapeamento(vigentes, DROPDOWN, mapa) == []
 
@@ -48,14 +48,31 @@ def test_validar_mapeamento_ok():
 def test_validar_mapeamento_programa_vazio():
     from src.contratos import validar_mapeamento
 
-    erros = validar_mapeamento({"C1": {}}, DROPDOWN, {"C1": {"programa": ""}})
-    assert len(erros) == 1 and "C1" in erros[0]
+    erros = validar_mapeamento(
+        {"C1": {}}, DROPDOWN, {"C1": {"programa": "", "tipo": "Eletrificação Rural"}})
+    assert any("C1" in e and "programa" in e for e in erros)
+
+
+def test_validar_mapeamento_tipo_ausente_e_erro():
+    from src.contratos import validar_mapeamento
+
+    erros = validar_mapeamento({"C1": {}}, DROPDOWN, {"C1": {"programa": "AES SUL - 2ª Tranche"}})
+    assert any("tipo" in e for e in erros)  # tipo é obrigatório
+
+
+def test_validar_mapeamento_tipo_invalido_e_erro():
+    from src.contratos import validar_mapeamento
+
+    mapa = {"C1": {"programa": "AES SUL - 2ª Tranche", "tipo": "Inexistente"}}
+    erros = validar_mapeamento({"C1": {}}, DROPDOWN, mapa)
+    assert any("tipo" in e for e in erros)  # fora dos 5 válidos
 
 
 def test_validar_mapeamento_programa_inexistente():
     from src.contratos import validar_mapeamento
 
-    erros = validar_mapeamento({"C1": {}}, DROPDOWN, {"C1": {"programa": "NAO EXISTE"}})
+    mapa = {"C1": {"programa": "NAO EXISTE", "tipo": "Eletrificação Rural"}}
+    erros = validar_mapeamento({"C1": {}}, DROPDOWN, mapa)
     assert any("dropdown" in e for e in erros)
 
 
@@ -64,8 +81,8 @@ def test_validar_mapeamento_duplicata_e_erro():
 
     vigentes = {"C1": {}, "C2": {}}
     mapa = {
-        "C1": {"programa": "AES SUL - 2ª Tranche"},
-        "C2": {"programa": "AES SUL - 2ª Tranche"},  # 1:1 violado
+        "C1": {"programa": "AES SUL - 2ª Tranche", "tipo": "Eletrificação Rural"},
+        "C2": {"programa": "AES SUL - 2ª Tranche", "tipo": "Eletrificação Rural"},  # 1:1 violado
     }
     assert any("duplicad" in e for e in validar_mapeamento(vigentes, DROPDOWN, mapa))
 
@@ -74,12 +91,12 @@ def test_montar_esqueleto_preserva_preenchido():
     from scripts.gerar_mapeamento import montar_esqueleto
 
     vigentes = {"C1": {}, "C2": {}}
-    existente = {"C1": {"programa": "RGE - 3ª Tranche"}}  # já preenchido
+    existente = {"C1": {"programa": "RGE - 3ª Tranche", "tipo": "Fonte Alternativa"}}
     novo = montar_esqueleto(vigentes, existente)
 
-    assert novo["C1"] == {"programa": "RGE - 3ª Tranche"}  # preservado, nunca sobrescrito
-    assert novo["C2"] == {"programa": ""}                  # novo entra vazio
-    assert all("sugestao" not in v for v in novo.values())  # sugestão removida
+    assert novo["C1"] == {"programa": "RGE - 3ª Tranche", "tipo": "Fonte Alternativa"}  # preservado
+    assert novo["C2"] == {"programa": "", "tipo": "Eletrificação Rural"}  # novo: vazio + tipo default
+    assert all("sugestao" not in v for v in novo.values())
 
 
 def test_mapeamento_real_quando_preenchido():

@@ -37,12 +37,20 @@ def carregar_vigentes(caminho=None) -> dict:
 
 def validar_mapeamento(vigentes: dict, dropdown: list, mapa: dict) -> list:
     """Lista de erros (vazia = ok): (a) todo vigente com programa; (b) programa existe
-    literalmente no dropdown; (c) mapeamento 1:1 (programa duplicado = erro)."""
+    literalmente no dropdown; (c) mapeamento 1:1 (programa duplicado = erro); (d) todo
+    vigente com 'tipo' preenchido e dentro dos tipos válidos (config.TIPOS_PROJETO)."""
     erros = []
     dropdown_set = set(dropdown)
     vistos = {}
     for contrato in vigentes:
-        programa = (mapa.get(contrato) or {}).get("programa", "").strip()
+        entry = mapa.get(contrato) or {}
+        # (d) tipo de projeto: obrigatório e dentro dos 5 radios válidos
+        tipo = (entry.get("tipo") or "").strip()
+        if not tipo:
+            erros.append(f"contrato {contrato!r} sem 'tipo' preenchido")
+        elif tipo not in config.TIPOS_PROJETO:
+            erros.append(f"contrato {contrato!r}: tipo {tipo!r} não é válido {config.TIPOS_PROJETO}")
+        programa = entry.get("programa", "").strip()
         if not programa:
             erros.append(f"contrato {contrato!r} sem 'programa' preenchido")
             continue

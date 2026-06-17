@@ -52,8 +52,9 @@ contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`
 - **NÃO são entradas:** `minhas_notas/` (ignorar por completo), `manuais/` (apenas referência
   visual do fluxo manual + origem da fixture), `planning/` (documentação), `bug_fix/` (registros),
   `vpn_resultados/` (resultados trazidos da VPN — insumo de análise, não do pipeline).
-- **Saídas:** `output/` (pdf/, logs/, inspecao/, consolidado.csv, relatorio_execucao.csv) —
-  não versionar.
+- **Saídas:** `output/` (pdf/, logs/, inspecao/, consolidado.csv) — não versionar. O **estado
+  da rodada** (`src/estado_execucao.json` — dirige a auto-retomada; fora de `output/` p/ não
+  confundir com resultados) também não é versionado.
 
 ## Ambiente e execução
 

@@ -30,7 +30,7 @@ execução; drive `Z:` acessível; não usar mouse/teclado enquanto um script de
 | F3 | [VPN]+[AUTO] | Roteiro 3 (exportar 1 PDF 2×) + `pytest tests/test_f3_pdf_valido.py` | **concluído** em 16/06/2026 (PDF 53 págs, sobrescrita OK) |
 | F2 | [VPN]+[AUTO] | Roteiro 4 (`gerar_mapeamento.py`) + `pytest tests/test_f2_mapeamento.py` | aguarda escrever F2 |
 | F4 | [AUTO] | `pytest tests/test_f4_parse_pdf.py` (fixture real em tests/fixtures/) | a desenvolver no DEV |
-| F5 | [AUTO]+[VPN] | `pytest tests/test_f5_consolidacao.py` + roteiro (a escrever) | aguarda F3/F4 |
+| F5 | [AUTO]+[VPN] | `pytest tests/test_f5_consolidacao.py` (15 testes) + Roteiro 5 | **DEV pronto** 17/06/2026 (suíte 41/41); Roteiro 5 aguarda viagem |
 | F6 | [VPN] | PowerShell limpo: `.\run.ps1 --dry-run` → `--contratos "X"` | aguarda F5 |
 
 ---
@@ -158,9 +158,9 @@ depois do roteiro 2 passar.
 
 | # | Passo | O que esperar |
 |---|---|---|
-| 3.1 | `.venv\Scripts\python.exe -m src.exportar_pdf --programa "AES SUL - 2ª Tranche"` | Navega → imprime → preenche o nome no "Salvar Saída de Impressão como" → aguarda a geração → log `=== EXPORTOU: ...AES_SUL_-_2a_Tranche.pdf ===`. Pode levar ~1–2 min. |
+| 3.1 | `.venv\Scripts\python.exe -m src.exportar_pdf --contrato "ECO 019/2020"` | Resolve o programa pelo map → navega → imprime → preenche o nome no "Salvar Saída de Impressão como" → aguarda a geração → log `=== EXPORTOU: ...ECO_019_2020.pdf ===`. Pode levar ~1–2 min. |
 | 3.2 | Rode **o mesmo comando de novo** (testa sobrescrita) | Mesmo resultado; o log mostra "apagando PDF antigo" no começo. |
-| 3.3 | Confira que `output\pdf\AES_SUL_-_2a_Tranche.pdf` existe e abre num leitor de PDF | PDF do relatório (≈53 págs). |
+| 3.3 | Confira que `output\pdf\ECO_019_2020.pdf` existe e abre num leitor de PDF | PDF do relatório (≈53 págs). |
 | 3.4 | `powershell -ExecutionPolicy Bypass -File deploy\coletar.ps1` → trazer o zip | O zip leva o **PDF** (alimenta `test_f3_pdf_valido.py` e a F4 no DEV) + os logs. |
 
 > Em falha: o CLI grava `output\inspecao\exportar_falha_*` (dump+screenshot) e o log com pixels.
@@ -188,10 +188,41 @@ vigente (usando o campo `sugestao` como pista) e o teste [AUTO] valida.
 
 > Em falha do 4.1: o script grava `output\inspecao\gerar_mapeamento_falha_*` + log com pixels.
 
-## Roteiros futuros (quando as fases fecharem)
+## Roteiro 5 — Pipeline completo: modo automático, refresh e retomada (valida `main.py`, F5) · `pacote_v13.zip`
 
-- **Roteiro 5 (F5):** `--dry-run` → 2 contratos → interromper/retomar → rodada completa.
-- **Roteiro 6 (F6):** `.\run.ps1` em PowerShell limpo.
+**Objetivo:** validar o `run.ps1`/`main.py` na VPN — o **modo automático** (refresh/retomar
+decidido pelo `src\estado_execucao.json`), a retomada após interrupção e uma rodada completa.
+Só faça depois do roteiro 3 passar.
+
+**Pré-requisito de energia (importante):** na 1ª rodada a **estação local (cliente RDP) dormiu**
+(~16 min) e os últimos contratos falharam com "no active desktop". Antes de rodar: no **seu PC
+local**, plano de energia "nunca suspender" + desativar protetor de tela/bloqueio; manter o RDP
+em foco. (É a estação local, não a VM, que precisa ficar acordada.)
+
+**Antes:** extrair `pacote_v13.zip` **por cima** + rodar o LEIA-ME. **Não precisa reinstalar**.
+LNC aberto na tela inicial. Para começar do zero, apague `output\pdf\` **e** `src\estado_execucao.json`.
+
+| # | Passo | O que esperar |
+|---|---|---|
+| 5.0 | **Valida o radio Tipo de Projeto (novo):** `.venv\Scripts\python.exe -m src.lnc_app --programa "Piauí 8ª Tranche" --tipo "Fonte Alternativa"` | Log `radio Tipo de Projeto 'Fonte Alternativa' -> centro=(...)` + preview pronto (`SMOKE OK`). Confirma o seletor do tipo antes da rodada. |
+| 5.1 | `.\run.ps1 --dry-run` | `MODO da rodada: refresh` (sem estado) → lista os 21 como `-> exportar`. **Não abre o LNC.** |
+| 5.2 | `.\run.ps1 --contratos "ECO 019/2020,ECO 021/2020"` | Exporta os 2 PDFs → consolida → grava `estado_execucao.json` → `RESUMO [refresh]: 2 exportado...`. |
+| 5.3 | **Auto-retomada:** rode `.\run.ps1` (sem flag) logo em seguida | `MODO: retomar` (faltam 19); pula os 2 já feitos, exporta os outros 19. Confirma a decisão automática pelo estado. |
+| 5.4 | **Refresh forçado:** `.\run.ps1 --refresh --contratos "ECO 019/2020"` | Re-exporta o ECO 019 mesmo já estando ok (log "apagando PDF antigo"). |
+| 5.5 | **Interrupção:** `.\run.ps1` (completo), **mate no meio** (Ctrl+C); depois `.\run.ps1` de novo | A 2ª chamada entra sozinha em `retomar` e continua de onde parou (sem flag). |
+| 5.6 | **Rodada completa (supervisionada):** com tudo limpo, `.\run.ps1` | 21 contratos (15–25 min); `consolidado.csv` + `estado_execucao.json`; resumo idealmente sem `falha`. |
+| 5.7 | `powershell -ExecutionPolicy Bypass -File deploy\coletar.ps1` → trazer o zip | O zip leva os PDFs, `consolidado.csv`, `estado_execucao.json` e os logs. |
+
+**No DEV, depois da viagem:** abrir `estado_execucao.json` (status/tentativas/linhas por contrato)
+e amostrar 5 linhas do `consolidado.csv` contra um PDF aberto (corretude dos dados reais).
+
+> **ECO 029/2024** (LNC travando o preview) tende a falhar; após **3 rodadas** vira `desistido`
+> no estado e deixa de bloquear o refresh dos demais. Em qualquer falha, `main` grava screenshot
+> em `output\` + segue o laço. Traga o zip mesmo assim.
+
+## Roteiro 6 — `run.ps1` em PowerShell limpo (F6, futuro)
+
+- **Roteiro 6 (F6):** `.\run.ps1 --dry-run` num PowerShell novo + fixação da impressora padrão.
 
 ## Para repetir um teste de UI do zero
 

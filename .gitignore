@@ -5,6 +5,9 @@ vpn_resultados/
 minhas_notas/
 bug_fix/
 
+# Estado operacional da rodada (F5) — gerado na VPN, vive em src/ mas NÃO é código
+src/estado_execucao.json
+
 # Documentos HTML gerados (derivados dos .md — regeneráveis)
 *.html
 

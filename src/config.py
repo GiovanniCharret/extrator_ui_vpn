@@ -75,7 +75,14 @@ ITEM_PROJETOS_EXECUTADOS = "7  - Projetos Executados"  # DOIS espaços após o 7
 TITULO_TAB_FILTROS = "Projetos Executados"     # TTabSheet/TabItem do painel de filtros
 RADIO_PROGRAMA = "Programa"                    # TRadioButton (win32)
 COMBO_PROGRAMA_BEST_MATCH = "ProgramaComboBox" # TComboBox; embrulhar com ComboBoxWrapper(handle)
-RADIO_TIPO_PADRAO = "Eletrificação Rural"      # TGroupButton; conferir marcado, não alterar
+# "Tipo de Projeto" (grupo à direita do painel): 5 radios TGroupButton. O relatório
+# é filtrado por Programa E Tipo; cada contrato tem o seu (a maioria "Eletrificação
+# Rural", mas ex.: Piauí 8ª só tem dados em "Fonte Alternativa" — VPN 17/06/2026).
+# Precisa ser selecionado por contrato (persiste entre iterações no mesmo app).
+CLASSE_RADIO_TIPO = "TGroupButton"
+TIPOS_PROJETO = ("Diversos", "Eletrificação Rural", "Fonte Alternativa", "Geração", "Subestação")
+TIPO_PROJETO_PADRAO = "Eletrificação Rural"    # default da maioria dos contratos
+RADIO_TIPO_PADRAO = "Eletrificação Rural"      # (compat) confere a data; tipo agora é selecionado
 BOTAO_VISUALIZAR = "Visualizar"                # uia, control_type=Button (sem HWND no win32)
 BOTAO_PROIBIDO_REL_EXCEL = "Rel.Excel"         # NUNCA clicar (regra crítica)
 DATA_INICIO_PADRAO = "01/01/2004"              # TMaskEdit; conferir, não alterar
@@ -91,6 +98,14 @@ ARQUIVO_ESTAVEL_INTERVALO = 1  # intervalo entre stats para considerar o PDF gra
 
 # --- Saída ---------------------------------------------------------------
 CSV_CONSOLIDADO = OUTPUT_DIR / "consolidado.csv"
-CSV_RELATORIO = OUTPUT_DIR / "relatorio_execucao.csv"
 CSV_ENCODING = "utf-8-sig"
 CSV_DELIMITADOR = ";"
+
+# Estado da rodada (F5): relatório humano E estado de máquina que dirige a
+# auto-retomada (substitui o antigo relatorio_execucao.csv). JSON utf-8. Fica em
+# src/ (NÃO em output/) para não ser confundido com as saídas/resultados do laço,
+# e por ser estado operacional persistente entre rodadas (gravado a cada contrato).
+ESTADO_JSON = BASE_DIR / "src" / "estado_execucao.json"
+# Quantas rodadas seguidas um contrato pode falhar antes de virar "desistido"
+# (sai do caminho da retomada para o refresh dos demais voltar). VPN 17/06/2026.
+MAX_TENTATIVAS_CONTRATO = 3

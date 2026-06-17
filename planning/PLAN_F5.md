@@ -70,6 +70,62 @@ DEV; **[VPN]** = roteiro na VPN.
 
 ---
 
+## Convenção de documentação do código (vale para TODA a F5) `[regra]`
+
+Pedido do usuário (16/06/2026): o código da F5 (e as funções tocadas no `exportar_pdf` da
+Tarefa 1) deve ser **exaustivamente documentado**. A regra:
+
+1. **Toda função tem docstring** que explica, nesta ordem:
+   - **Por que a função existe** (o motivo de ela ser uma função separada / o problema que resolve);
+   - **A lógica do input ao output, em fases numeradas** ("Entrada: … / Fase 1 … / Fase 2 … /
+     Saída: …") — descrevendo o que cada bloco transforma, não só o tipo de retorno.
+2. **Toda linha de código tem um comentário** ao lado (ou imediatamente acima) explicando o que
+   aquela linha faz e por quê — incluindo as linhas que parecem óbvias.
+
+> Esta convenção **sobrepõe** a densidade enxuta de comentários do código já existente
+> (`lnc_app`, `parse_pdf` etc.) **apenas para os arquivos da F5**. Não reescrever os módulos
+> antigos. Os sketches de código deste plano são abreviados; a implementação real seguirá o
+> estilo exemplificado abaixo em **todas** as funções.
+
+**Exemplo canônico (é assim que cada função da F5 deve ficar):**
+
+```python
+def consolidar(vigentes, mapa, pdf_dir, log):
+    """Reúne num só lugar os dados de todos os PDFs já exportados.
+
+    Por que existe: o pipeline gera 1 PDF por contrato; para entregar um CSV único
+    (contrato;odi;uf;municipio) é preciso reabrir cada PDF presente e juntar tudo,
+    sempre prefixando o contrato (chave primária). Isolar isso aqui mantém a etapa
+    pura e reexecutável (idempotente), sem depender da UI.
+
+    Lógica, do input ao output, em fases:
+      Entrada: vigentes (dict de contratos), pdf_dir (pasta dos PDFs), log.
+      Fase 1 — percorre cada contrato vigente (a ordem do CSV segue a dos vigentes).
+      Fase 2 — calcula o caminho esperado do PDF; se não existe, o contrato ainda não
+               foi exportado nesta rodada => pula (nada a consolidar para ele).
+      Fase 3 — parseia o PDF (parse_pdf) em linhas (odi, uf, municipio).
+      Fase 4 — prefixa o contrato em cada linha e acumula no resultado.
+      Saída: lista de tuplas (contrato, odi, uf, municipio) de todos os PDFs presentes.
+    """
+    rows = []                                       # acumulador de todas as linhas (saída final)
+    for contrato in vigentes:                       # Fase 1: um contrato por vez, na ordem dos vigentes
+        destino = _destino(pdf_dir, contrato)       # caminho esperado: output/pdf/<contrato>.pdf
+        if not destino.exists():                    # Fase 2: PDF ausente => contrato não exportado ainda
+            log.info("sem PDF para %s", contrato)   # deixa rastro do pulo (execução cega)
+            continue                                # segue para o próximo contrato
+        linhas = parse_pdf.extrair_linhas(destino)  # Fase 3: PDF -> [(odi, uf, municipio)]
+        log.info("%s: %d linhas", contrato, len(linhas))  # rastro do volume por contrato
+        rows.extend(                                # Fase 4: prefixa o contrato em cada linha
+            (contrato, odi, uf, muni) for odi, uf, muni in linhas
+        )
+    return rows                                     # saída: todas as linhas, agrupáveis por contrato
+```
+
+> Critério de aceite desta convenção (verificado na revisão de cada tarefa): nenhuma função sem
+> docstring no formato acima; nenhuma linha de lógica sem comentário.
+
+---
+
 ## Tarefa 1 — Nome do PDF pelo contrato (ajuste cirúrgico na F3) `[AUTO]`
 
 Alinha `exportar_pdf` à convenção decidida. O fluxo de UI (já validado na VPN) **não muda** — só
@@ -530,6 +586,80 @@ o laço na VPN e os roteiros.
 - [ ] **Step 3: atualizar roteiro 3 da F3** para `--contrato` (Tarefa 1).
 - [ ] **Step 4: commit** — `feat(f5): run.ps1 minimo + roteiros VPN 5-7`
 - [ ] **Step 5: validação [VPN]** — usuário roda os roteiros 5–7; traz `resultados_<data>.zip`.
+
+---
+
+## Tarefa 8 — Auto-retomada por estado + orçamento de tentativas (revisão pós-VPN 17/06) `[AUTO]`
+
+**Contexto:** a 1ª rodada VPN expôs que decidir `--retomar` à mão é fricção. Decisão (17/06):
+`run.ps1` **sem flag decide sozinho** lendo um arquivo de **estado JSON** (que **substitui** o
+`relatorio_execucao.csv` — é relatório humano *e* estado de máquina). Isto **supersede** o
+"default re-exporta / `--retomar` opt-in" das Tarefas 2/6.
+
+**Estado** `src/estado_execucao.json` (fora de `output/` p/ não confundir com resultados; gravado
+**após cada contrato** → retoma após Ctrl+C/queda/sono) — por contrato: `status` (`exportado`|`falha`|`desistido`),
+`tentativas` (rodadas falhando seguidas), `linhas`, `erro`, `ultimo_ok` (timestamp) + metadados
+de rodada (`gerado_em`, `modo`, `resumo`).
+
+**Lógica (pura, testável):**
+- `decidir_modo(estado, vigentes)` → `refresh` se estado vazio **ou** todo vigente é
+  `exportado`/`desistido` (rodada anterior completa); senão `retomar`.
+- `planejar(..., modo, estado)` → em `refresh`, exporta TODOS; em `retomar`, exporta só quem
+  **não** está `exportado`/`desistido` (falha tentável + nunca-tentados), pula o resto.
+- `atualizar_estado(estado_ant, resultados, rows, modo, max_tentativas, agora)` → em `refresh`
+  zera contadores; sucesso → `exportado`/`tentativas=0`/`ultimo_ok`; falha → `tentativas+1`,
+  vira `desistido` ao atingir `MAX_TENTATIVAS_CONTRATO` (=3); pulados carregam o estado anterior;
+  `linhas` vem da consolidação.
+- `carregar_estado`/`escrever_estado` (JSON utf-8, `ensure_ascii=False`, indent=2).
+
+**Completa = status de exportação** (PDF gerado), **não** contagem de linhas (relatório vazio
+legítimo, ex.: ECO_036, conta como sucesso). Limite de tentativas evita que 1 contrato quebrado
+(ECO 029) trave o refresh dos outros para sempre — após 3 falhas vira `desistido` e a rodada fecha.
+
+**Config:** `MAX_TENTATIVAS_CONTRATO = 3`; `ESTADO_JSON = BASE_DIR/"src"/"estado_execucao.json"`
+(remove `CSV_RELATORIO`). `consolidado.csv` permanece.
+
+**CLI:** default = automático (modo decidido pelo estado). Mantém `--contratos`, `--somente-parse`,
+`--dry-run` (mostra o **modo** decidido); adiciona `--refresh` (força rodada completa). **Remove o
+`--retomar` manual** (virou automático). Remove `montar_relatorio`/`escrever_relatorio` (CSV).
+
+**Caveat (documentado):** com cadência 1×/dia, um contrato persistentemente falho leva até N=3
+dias para virar `desistido` (1 tentativa/rodada) — durante esse período o refresh fica parcial.
+
+**Pronto quando:** suíte cobre `decidir_modo` (refresh/retomar), `planejar(modo)`,
+`atualizar_estado` (sucesso/falha→tentativas→desistido/refresh-zera/pulado-carrega),
+round-trip `escrever`/`carregar`. Smoke DEV `--dry-run` mostra o modo.
+
+---
+
+## Tarefa 9 — Filtro "Tipo de Projeto" por contrato (pós-VPN 17/06) `[AUTO]+[VPN]`
+
+**Contexto:** a 2ª rodada VPN mostrou que o relatório é filtrado por **dois** eixos — Programa
+**e** "Tipo de Projeto" (radio à direita: Diversos / Eletrificação Rural / Fonte Alternativa /
+Geração / Subestação). O código só controlava o Programa e assumia o default. ECO 029 (Piauí 8ª)
+só tem dados em **Fonte Alternativa** → vinha 0 linhas. Como o radio **persiste entre iterações**
+(não reabrimos o app), o tipo tem de ser selecionado **para todo contrato**.
+
+**Mudanças:**
+- `programas_map.json`: nova propriedade **`tipo`** por contrato (decisão: explícita nos 21;
+  20 = `Eletrificação Rural`, ECO 029 = `Fonte Alternativa`). _(ECO 029 havia sumido do map por
+  edição acidental — restaurado.)_
+- `config`: `TIPOS_PROJETO` (os 5), `TIPO_PROJETO_PADRAO`, `CLASSE_RADIO_TIPO="TGroupButton"`.
+- `contratos.validar_mapeamento`: passa a exigir `tipo` presente e ∈ `TIPOS_PROJETO`.
+- `gerar_mapeamento.montar_esqueleto`: emite `tipo` com o padrão (futuras regenerações).
+- `lnc_app.selecionar_tipo(jp, tipo, log)` [VPN]: clica o `TGroupButton` por título (log de
+  pixels); smoke do `lnc_app` ganha `--tipo`.
+- `exportar_pdf.exportar(programa, contrato, tipo, log, destino)`: seleciona o tipo antes do
+  programa; CLI resolve `tipo` pelo map.
+- `main`: `planejar`/`executar`/`atualizar_estado` carregam e propagam o `tipo` (gravado também
+  no `estado_execucao.json`).
+- Testes [AUTO]: validação do tipo (F2), `planejar` carrega tipo, `executar` repassa tipo ao
+  `exportar_fn`. `selecionar_tipo` é [VPN] (Roteiro 5 / smoke).
+
+**Risco:** os seletores dos 4 tipos não-default não foram confirmados em dump (só Eletrificação
+Rural na F1). Plano: selecionar por `título + TGroupButton`; a viagem confirma. **Suíte 57/57.**
+
+**ECO 039 (Goiás) / ECO 042 (Amapá 3ª):** 0 linhas é legítimo (sem dados cadastrados) — sem ação.
 
 ---
 

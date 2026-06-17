@@ -138,6 +138,27 @@ def selecionar_programa(jp, programa_texto: str, log: logging.Logger) -> None:
     log.info("programa selecionado OK: %r", lido)
 
 
+def selecionar_tipo(jp, tipo: str, log: logging.Logger) -> None:
+    """Marca o radio do grupo 'Tipo de Projeto' (TGroupButton) do tipo pedido.
+
+    O relatório é filtrado por Programa E Tipo; cada contrato tem o seu (a maioria
+    'Eletrificação Rural', mas ex.: Piauí 8ª só tem dados em 'Fonte Alternativa').
+    Como o radio persiste entre iterações (não reabrimos o app), seleciona-se SEMPRE,
+    para todo contrato — senão o tipo de um vaza para o próximo.
+    """
+    if tipo not in config.TIPOS_PROJETO:                 # erro cedo: tipo fora dos 5 radios
+        raise RuntimeError(f"tipo {tipo!r} não é um dos válidos {config.TIPOS_PROJETO}")
+    radio = jp.child_window(title=tipo, class_name=config.CLASSE_RADIO_TIPO)  # radio por título
+    _clicar_controle(radio, f"radio Tipo de Projeto {tipo!r}", log)  # clica + loga pixels (debug cego)
+    try:                                                 # verificação best-effort (some TGroupButton expõe estado)
+        if hasattr(radio, "is_selected") and not radio.is_selected():
+            log.warning("radio de tipo %r pode não ter marcado — conferir no log/pixels", tipo)
+        else:
+            log.info("tipo de projeto selecionado OK: %r", tipo)
+    except Exception:
+        log.info("tipo de projeto clicado: %r (estado não verificável neste backend)", tipo)
+
+
 def conferir_filtros_padrao(jp, log: logging.Logger) -> None:
     """Confere (não altera) a data início padrão; só avisa se divergir."""
     try:
@@ -218,13 +239,16 @@ def _smoke():
 
     p = argparse.ArgumentParser(description="Smoke: navega até o preview e para.")
     p.add_argument("--programa", required=True, help="texto EXATO do dropdown")
+    p.add_argument("--tipo", default=config.TIPO_PROJETO_PADRAO,
+                   help=f"radio Tipo de Projeto (default {config.TIPO_PROJETO_PADRAO!r})")
     args = p.parse_args()
     log = _configurar_log()
-    log.info("=== lnc_app smoke --programa %r ===", args.programa)
+    log.info("=== lnc_app smoke --programa %r --tipo %r ===", args.programa, args.tipo)
     try:
         app, jp = conectar_ou_abrir(log)
         limpar_estado(app, log)
         navegar_para_painel(app, jp, log)
+        selecionar_tipo(jp, args.tipo, log)
         selecionar_programa(jp, args.programa, log)
         conferir_filtros_padrao(jp, log)
         abrir_preview(app, log)

@@ -23,11 +23,19 @@ from src import contratos as contratos_mod  # noqa: E402
 
 
 def montar_esqueleto(vigentes: dict, mapa_existente: dict) -> dict:
-    """{contrato: {'programa': ''}} para preencher à mão — preserva o já preenchido (merge)."""
-    return {
-        contrato: {"programa": (mapa_existente.get(contrato) or {}).get("programa", "")}
-        for contrato in vigentes
-    }
+    """{contrato: {'programa': '', 'tipo': <padrão>}} para preencher à mão.
+
+    Preserva o já preenchido (merge); 'tipo' nasce com o padrão (Eletrificação Rural,
+    a maioria) e é ajustado à mão quando o contrato usa outro radio (ex.: Fonte Alternativa).
+    """
+    esqueleto = {}
+    for contrato in vigentes:
+        ant = mapa_existente.get(contrato) or {}
+        esqueleto[contrato] = {
+            "programa": ant.get("programa", ""),               # preserva o programa já preenchido
+            "tipo": ant.get("tipo", config.TIPO_PROJETO_PADRAO),  # preserva o tipo ou usa o padrão
+        }
+    return esqueleto
 
 
 def enumerar_dropdown(log: logging.Logger) -> list:
