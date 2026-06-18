@@ -1,0 +1,4 @@
+﻿UCP_Num_UC,UCP_Data_Cadastro,PPC_COD_LOCALIZACAO,PPC_Cod_Projeto,PPC_Nome_Projeto,PPC_referencia_localizacao,PPC_Odi,PPC_Data_Cadastro,PPC_Custo_Projeto,PPC_Status_Web,PPC_Status_Web_Descricao,PPC_Obs,PPC_Data_ini_Obras,PPC_Data_fim_Obras,PPC_projeto_assentamento,PPC_Data_Envio,PPC_Cod_Programa,PPC_cod_email,PPC_cod_parecer,PR_Parecer,PC_CODESE,PC_Cod_Programa,PC_Num_Consumidor,PC_Nome_Programa,PC_Valor_Total_Prog,PC_Status_Web,PC_valorsolicitado,PC_valoraprovado,PC_Observacao,PC_Data_Cadastro
+111,,,374944,"PROJ TESTE A, COM VIRGULA",,10090247,,"15250,1200",_F_,Fechado em Lote,,,,,,1520,,,,,,,,,,,,,
+222,,,374945,PROJ TESTE B,,10090248,,"15250,1200",_F_,Fechado em Lote,,,,,,1520,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,

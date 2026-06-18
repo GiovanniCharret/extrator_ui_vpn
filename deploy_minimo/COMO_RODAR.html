@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Como rodar o pipeline — criar a venv e executar o deploy</title>
+  <style>
+    :root {
+      --ivory:#FAF9F5; --slate:#141413; --clay:#D97757; --oat:#E3DACC; --olive:#788C5D;
+      --gray-150:#F0EEE6; --gray-300:#D1CFC5; --gray-500:#87867F; --gray-700:#3D3D3A; --white:#FFFFFF;
+      --serif: ui-serif, Georgia, 'Times New Roman', serif;
+      --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --mono: ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:var(--sans); background:var(--ivory); color:var(--gray-700); line-height:1.6; padding:48px 28px 100px; -webkit-font-smoothing:antialiased; }
+    .page { max-width:840px; margin:0 auto; }
+    .eyebrow { font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gray-500); margin-bottom:10px; }
+    h1 { font-family:var(--serif); font-weight:500; font-size:32px; line-height:1.2; color:var(--slate); margin-bottom:14px; }
+    .lead { font-size:15px; color:var(--gray-700); margin-bottom:8px; max-width:680px; }
+    .warn { background:#F3D9CC; border:1.5px solid #e8c3b2; border-radius:10px; padding:14px 18px; margin:24px 0 8px; font-size:14px; color:#8A3B1E; }
+    .warn b { color:#6f2f17; }
+    h2 { font-family:var(--serif); font-weight:500; font-size:22px; color:var(--slate); margin:44px 0 6px; }
+    h2 .n { font-family:var(--mono); font-size:13px; background:var(--oat); color:var(--slate); padding:3px 9px; border-radius:8px; margin-right:10px; }
+    .sub { font-size:13.5px; color:var(--gray-500); margin-bottom:18px; }
+    ol.steps { list-style:none; counter-reset:s; padding:0; }
+    ol.steps > li { counter-increment:s; position:relative; padding:0 0 20px 42px; }
+    ol.steps > li::before { content:counter(s); position:absolute; left:0; top:0; width:28px; height:28px; border-radius:50%; background:var(--clay); color:#fff; font-family:var(--mono); font-size:13px; display:flex; align-items:center; justify-content:center; }
+    ol.steps > li .t { font-size:15px; color:var(--slate); font-weight:600; margin-bottom:4px; }
+    ol.steps > li .d { font-size:13.5px; color:var(--gray-500); margin-bottom:8px; }
+    pre { background:var(--gray-150); border:1.5px solid var(--gray-300); border-radius:10px; padding:13px 16px; overflow-x:auto; }
+    pre code { font-family:var(--mono); font-size:13px; line-height:1.7; color:var(--slate); white-space:pre; }
+    p code, td code, li code { font-family:var(--mono); font-size:0.9em; background:var(--gray-150); padding:1px 5px; border-radius:5px; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; background:var(--white); border:1.5px solid var(--gray-300); border-radius:10px; overflow:hidden; }
+    th, td { text-align:left; padding:10px 14px; font-size:13.5px; border-bottom:1px solid var(--gray-300); vertical-align:top; }
+    th { background:var(--gray-150); color:var(--slate); font-size:12px; text-transform:uppercase; letter-spacing:0.04em; }
+    tr:last-child td { border-bottom:none; }
+    .files { background:var(--white); border:1.5px solid var(--gray-300); border-radius:10px; padding:14px 18px; font-size:13.5px; }
+    .files b { color:var(--olive); }
+    footer { margin-top:48px; font-size:12.5px; color:var(--gray-500); border-top:1px solid var(--gray-300); padding-top:16px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="eyebrow">Sistema LPT · Fase 1 · Guia de operação</div>
+    <h1>Como criar a venv e rodar o pipeline</h1>
+    <p class="lead">Passo a passo para preparar o ambiente Python e executar a extração dos
+      relatórios (Projetos Executados → ODI/UF/Município) na máquina da VPN.</p>
+
+    <div class="warn">
+      <b>Antes de começar — confira o ambiente:</b>
+      <ul style="margin:8px 0 0 18px;">
+        <li>Você está na <b>máquina da VPN</b>, com o LNC acessível (<code>Z:\LNC\LNC.exe</code>).</li>
+        <li>A <b>sessão RDP</b> está aberta, em foco e <b>desbloqueada</b> durante toda a rodada.</li>
+        <li>A <b>sua estação local</b> (a que acessa o RDP) está com <b>suspensão e bloqueio de tela DESLIGADOS</b> — se ela dormir, a automação trava.</li>
+        <li>A impressora padrão do Windows é <b>"Microsoft Print to PDF"</b>.</li>
+      </ul>
+    </div>
+
+    <!-- ============ 1. UV ============ -->
+    <h2><span class="n">1</span>Pré-requisito: instalar o uv (uma vez)</h2>
+    <p class="sub">O <b>uv</b> gerencia o Python e as dependências. Instale-o <b>uma única vez</b>
+      (não exige administrador). <b>Não precisa criar a venv à mão</b> — o <code>run.ps1</code> faz
+      isso sozinho na primeira execução (passo 2). Se o uv já estiver instalado, pule para o passo 2.</p>
+
+    <ol class="steps">
+      <li>
+        <div class="t">Instalar o uv</div>
+        <div class="d">No PowerShell, na pasta do projeto (onde está o <code>run.ps1</code>):</div>
+        <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
+      </li>
+    </ol>
+
+    <!-- ============ 2. RODAR ============ -->
+    <h2><span class="n">2</span>Rodar o deploy</h2>
+    <p class="sub">Na pasta do projeto (onde está o <code>run.ps1</code>), com o LNC aberto na tela
+      inicial. <b>Na primeira execução</b>, o <code>run.ps1</code> cria a venv e instala as
+      dependências automaticamente (~1–2 min); nas próximas, já vai direto. Comece sempre pelo
+      <code>--dry-run</code>.</p>
+
+    <ol class="steps">
+      <li>
+        <div class="t">Ver o plano (e, na 1ª vez, preparar o ambiente)</div>
+        <div class="d">Na primeira vez, cria a venv + instala as deps. Depois lista os 21 contratos
+          e o que será feito em cada um. <b>Não abre o LNC.</b></div>
+        <pre><code>.\run.ps1 --dry-run</code></pre>
+      </li>
+      <li>
+        <div class="t">Rodar a extração completa</div>
+        <div class="d">Decide o modo <b>sozinho</b> lendo o estado da rodada anterior — não precisa escolher nada. Leva ~15–25 min (abre o LNC e gera 1 PDF por contrato).</div>
+        <pre><code>.\run.ps1</code></pre>
+      </li>
+    </ol>
+
+    <p>O <b>modo é automático</b>:</p>
+    <table>
+      <tr><th>Situação</th><th>O que o <code>run.ps1</code> faz</th></tr>
+      <tr><td>Primeira rodada, ou a anterior terminou completa</td><td><b>refresh</b> — re-exporta todos (dados frescos)</td></tr>
+      <tr><td>A rodada anterior foi interrompida (Ctrl+C, queda, sono)</td><td><b>retomar</b> — continua de onde parou, pulando o que já ficou pronto</td></tr>
+    </table>
+
+    <p>Opções extras (raramente necessárias):</p>
+    <table>
+      <tr><th>Comando</th><th>Para quê</th></tr>
+      <tr><td><code>.\run.ps1 --refresh</code></td><td>Forçar re-exportar todos, ignorando o estado.</td></tr>
+      <tr><td><code>.\run.ps1 --contratos "ECO 019/2020,ECO 021/2020"</code></td><td>Rodar só um subconjunto de contratos.</td></tr>
+      <tr><td><code>.\run.ps1 --somente-parse</code></td><td>Não abrir o LNC; só reprocessar os PDFs que já existem.</td></tr>
+    </table>
+
+    <!-- ============ 3. RESULTADOS ============ -->
+    <h2><span class="n">3</span>Onde ficam os resultados</h2>
+    <div class="files">
+      <p><b>output\consolidado.csv</b> — a tabela final (contrato; ODI; UF; município).</p>
+      <p><b>output\pdf\</b> — 1 PDF por contrato (<code>&lt;contrato&gt;.pdf</code>).</p>
+      <p><b>output\logs\run_&lt;data&gt;.log</b> — o log completo da rodada.</p>
+      <p><b>src\estado_execucao.json</b> — estado/relatório por contrato (status, tentativas,
+        nº de linhas). É o que permite a retomada automática — <b>não apague entre rodadas</b>.</p>
+    </div>
+
+    <!-- ============ 4. ERRO ============ -->
+    <h2><span class="n">4</span>Se algo der errado</h2>
+    <p>A rodada <b>não para</b> por causa de um contrato com erro: ele é marcado como falha no
+      estado e o laço segue. Quando um contrato falha, é gravado um screenshot em
+      <code>output\inspecao\</code>. Guarde a pasta <code>output\</code> e o arquivo
+      <code>src\estado_execucao.json</code> e acione o desenvolvedor com esses arquivos.</p>
+    <p>Para recomeçar do zero (descartando o progresso): apague <code>output\pdf\</code> e
+      <code>src\estado_execucao.json</code> antes de rodar.</p>
+
+    <footer>
+      Pipeline de extração LPT — Fase 1. Este guia cobre apenas a operação (criar a venv e rodar).
+      Detalhes de implementação ficam em <code>planning\PLAN.md</code> no repositório.
+    </footer>
+
+  </div>
+</body>
+</html>

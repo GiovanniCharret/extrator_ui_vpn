@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## O que é este projeto
 
 Automação de UI (pywinauto/pyautogui) do sistema legado **LPT — Luz Para Todos** (app
@@ -9,18 +11,28 @@ e consolidar ODI/UF/Município em CSV. O laço é dirigido por `base_contratos.j
 (contratos com `vigente != "Encerrado"` **e** que **não** sejam `ECM` — estes são
 contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`).
 
+**Escopo deste repositório = Fase 1 (extração LPT)** — encerrada e commitada em 17/06/2026
+(pendente só a validação VPN final do `pacote_v13`). As **fases futuras** previstas pelo usuário
+(Fase 2: cruzar ODIs com Unidades Consumidoras via SQL/SSRS; Fase 3: site que valida e reporta
+avanço a partir de planilhas de beneficiários) estão **registradas em `planning/PLAN.md` → "Fases
+futuras"**, **ainda não planejadas**. Há uma **decisão pendente** sobre se elas vivem aqui ou num
+projeto novo (recomendação: separar — stack/runtime/deploy diferentes do pipeline de UI).
+
 ## Arquitetura (visão rápida)
 
-- **Pipeline** (`src/`): `main.py` (laço/CLI/relatório) → `contratos.py` (vigentes + map) →
-  `lnc_app.py` (conexão e navegação idempotente no LNC) → `exportar_pdf.py` (1 PDF por
-  contrato, com as 4 esperas estruturais) → `parse_pdf.py` (pdfplumber, faixas de X por
-  cabeçalho) → `output/consolidado.csv`. **Retomada = existência do PDF** em `output/pdf/`:
-  consolidação reparseia todos os PDFs presentes e regrava o CSV inteiro (idempotente).
-- **`scripts/`** são ferramentas pontuais por fase (inspeção F1, mapeamento F2) — não fazem
-  parte do pipeline.
-- O projeto é construído em fases F0–F6; **o que já existe vs. planejado está no Controle de
-  progresso do `planning/PLAN.md`** (módulos e fases detalhados nas seções 4–5). Não presuma
-  que um módulo citado aqui já foi escrito.
+- **Pipeline** (`src/`): `main.py` (laço/CLI/estado) → `contratos.py` (vigentes + map) →
+  `lnc_app.py` (conexão e navegação idempotente no LNC; seleciona tipo + programa) →
+  `exportar_pdf.py` (1 PDF por contrato, com as esperas estruturais) → `parse_pdf.py`
+  (pdfplumber, faixas de X por cabeçalho; ODI alfanumérico) → `output/consolidado.csv`.
+- **Retomada é por ESTADO, não por arquivo** (`src/estado_execucao.json`): `main.decidir_modo`
+  escolhe sozinho `refresh` (re-exporta tudo = dados frescos) ou `retomar` (só o que faltou),
+  **sem flag**; o estado é gravado **após cada contrato** (robusto a Ctrl+C/queda/sono) e um
+  contrato que falha 3× vira `desistido`. A consolidação reparseia todos os PDFs presentes
+  (`output/pdf/<contrato>.pdf`) e regrava o CSV inteiro (idempotente).
+- **`scripts/`**: `inspecionar_app.py` (dump de telas, F1; também usado em runtime p/ screenshot
+  de falha — best-effort) e `gerar_mapeamento.py` (enumera o dropdown, F2). Não são o pipeline.
+- Fase 1 (F0–F6) **concluída**; histórico/detalhes por fase no Controle de progresso do
+  `planning/PLAN.md` (planos por fase em `PLAN_F1_F3.md`/`PLAN_F5.md`).
 
 ## Modelo de operação — LEIA ANTES DE QUALQUER COISA
 
@@ -43,7 +55,11 @@ contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`
   (explicitar premissas, perguntar em vez de assumir), simplicidade primeiro (mínimo de código,
   sem abstrações especulativas), mudanças cirúrgicas (cada linha rastreável ao pedido),
   critérios de sucesso verificáveis.
-  ** Não faça mudanças em `planning/BEHAVIORAL_GUIDELINES.md`. Fases de projeto devem viver em **`planning/PLAN.md`**
+- **Não altere `planning/BEHAVIORAL_GUIDELINES.md` nem `planning/PROJECT_BUILDING.md`** (meta-docs
+  do usuário). Fases e progresso vivem em `planning/PLAN.md`.
+- **Convenção de documentação do código** (vale para a F5 e código novo): toda função com docstring
+  explicando *por que existe* + a lógica do input ao output *em fases numeradas*; e toda linha de
+  lógica comentada. Exemplo no topo do `PLAN_F5.md`.
 
 ## Entradas e NÃO-entradas do pipeline
 
@@ -67,9 +83,13 @@ contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`
   **Anti-bloqueio de e-mail:** o zip sai com `.ps1`/`.py` renomeados para `*.renomeado.txt`
   (o filtro corporativo barra zips com scripts); o `LEIA-ME_PRIMEIRO.txt` interno traz o
   comando único de restauração.
-- Na VPN (usuário): `deploy\instalar.ps1` (setup) e `deploy\coletar.ps1` (zipa resultados).
-- Execução do pipeline (na VPN, após F6): `.\run.ps1` (`--dry-run`, `--contratos`, `--force`,
-  `--somente-parse`).
+- Na VPN (usuário): `deploy\instalar.ps1` (setup) e `deploy\coletar.ps1` (zipa `output/` +
+  `src/estado_execucao.json` em `resultados_<data>.zip`).
+- Execução do pipeline (na VPN): `.\run.ps1` — **modo automático** (refresh/retomar pelo estado);
+  flags `--dry-run`, `--contratos "A,B"`, `--refresh` (força tudo), `--somente-parse`. O `run.ps1`
+  **cria a venv sozinho na 1ª execução** (basta ter o `uv`).
+- **`deploy_minimo/`**: snapshot do conjunto mínimo runnable (6 `.py` + dados + `run.ps1` +
+  `COMO_RODAR.html`) — referência/versionamento; o builder canônico do pacote é `deploy\fazer_pacote.ps1`.
 
 ## Regras críticas
 
@@ -80,5 +100,8 @@ contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`
 - A geração do PDF desabilita o botão Imprimir e pode levar ~1 min (`TIMEOUT_GERACAO=300`).
 - Arquivos sempre UTF-8 (`encoding="utf-8"`); CSV em `utf-8-sig` com `;`.
   Scripts `.ps1` em **ASCII puro** (PowerShell 5.1 sem BOM corrompe acentos).
-- Mapeamento contrato → programa do dropdown é **1:1** e manual (`config/programas_map.json`);
-  duplicata é erro.
+- `config/programas_map.json` é manual: `{contrato: {programa, tipo}}`. `programa` = texto exato
+  do dropdown (**1:1**, duplicata é erro); `tipo` = radio "Tipo de Projeto" (`Eletrificação Rural`
+  por padrão; ex.: Piauí 8ª = `Fonte Alternativa`). O relatório filtra por programa **E** tipo, e o
+  tipo é selecionado em **todo** contrato (persiste entre iterações). `contratos.validar_mapeamento`
+  exige ambos (tipo ∈ `config.TIPOS_PROJETO`).

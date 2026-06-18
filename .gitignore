@@ -1,15 +1,20 @@
 # --- Saídas e dados não versionáveis (ver CLAUDE.md) ---
 .venv/
 output/
+output_ucs/
 vpn_resultados/
 minhas_notas/
 bug_fix/
 
 # Estado operacional da rodada (F5) — gerado na VPN, vive em src/ mas NÃO é código
 src/estado_execucao.json
+# Estado operacional da Fase 2 (UCs) — vive em ucs/ mas NÃO é código
+ucs/estado_ucs.json
 
 # Documentos HTML gerados (derivados dos .md — regeneráveis)
 *.html
+# Exceção: o guia de operação do deploy é artefato-fonte (não derivado de .md)
+!deploy_minimo/COMO_RODAR.html
 
 # Pacotes/Resultados do ciclo DEV<->VPN (build artifacts)
 pacote_*.zip

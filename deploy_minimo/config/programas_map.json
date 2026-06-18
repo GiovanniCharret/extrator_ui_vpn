@@ -1,0 +1,86 @@
+{
+  "ECO 011/2018": {
+    "programa": "ELETRONORTE - CEA REVISÃO 1",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 015/2019": {
+    "programa": "CEMAR 10ª TRANCHE REVISÃO 3",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 019/2020": {
+    "programa": "Boa Vista Energia 5ª Tranche Revisão 5",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 021/2020": {
+    "programa": "CELPA 7ª TRANCHE REVISÃO 3",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 025/2021": {
+    "programa": "COELBA 11ª TRANCHE REVISÃO 2",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 027/2021": {
+    "programa": "CEPISA 7ª TRANCHE REVISÃO 4",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 028/2024": {
+    "programa": "Pará 8ª Tranche Revisão 1",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 029/2024": {
+    "programa": "Piauí 8ª Tranche",
+    "tipo": "Fonte Alternativa"
+  },
+  "ECO 030/2024": {
+    "programa": "Acre 8ª Tranche Revisão 1",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 031/2025": {
+    "programa": "Coelba 12ª Tranche - Metas Excepcionais",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 032/2025": {
+    "programa": "Roraima 6ª Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 033/2025": {
+    "programa": "CERCI 3ª TRANCHE",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 035/2025": {
+    "programa": "Rondônia 8ª Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 036/2025": {
+    "programa": "Maranhão 12ª Tranche Metas Excepcionais",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 037/2025": {
+    "programa": "Paraíba 7ª Tranche Metas Excepcionais",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 038/2025": {
+    "programa": "Piauí 9ª Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 039/2025": {
+    "programa": "Goiás 6ª Tranche Metas Excepcionais",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 040/2025": {
+    "programa": "Amapá 2ª Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 041/2025": {
+    "programa": "Rondônia 9º Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 042/2025": {
+    "programa": "Amapá 3ª Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 043/2025": {
+    "programa": "Acre 9ª Tranche",
+    "tipo": "Eletrificação Rural"
+  }
+}
