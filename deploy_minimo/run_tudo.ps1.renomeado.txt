@@ -1,0 +1,84 @@
+# run_tudo.ps1 - orquestrador das duas fases (raiz do deploy_minimo).
+# Roteia CADA argumento para a(s) fase(s) que o aceita e repassa aos run scripts aninhados.
+# Ex.: ".\run_tudo.ps1 --sqlite" => Fase 1 NAO recebe --sqlite; Fase 2 recebe (run_ucs.ps1 --sqlite).
+#
+# Uso:
+#   .\run_tudo.ps1 [1|2|ambas] [argumentos...]
+#   .\run_tudo.ps1                      (ambas, padrao)
+#   .\run_tudo.ps1 --dry-run            (ambas, so o plano)
+#   .\run_tudo.ps1 --sqlite             (ambas; --sqlite cai so na Fase 2)
+#   .\run_tudo.ps1 2 --dados-projetos --sqlite
+#   .\run_tudo.ps1 1 --refresh
+#   .\run_tudo.ps1 --contratos "ECO 025/2021,ECO 021/2020"
+# Detalhe de cada argumento: COMO_USAR.html
+$ErrorActionPreference = "Stop"
+$raiz = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# 1) Fase selecionada (1 | 2 | ambas). Se o 1o token for uma fase, consome-o; senao "ambas".
+$toks = @($args)
+$fase = "ambas"
+if ($toks.Count -ge 1 -and @("1", "2", "ambas") -contains $toks[0]) {
+    $fase = $toks[0]
+    if ($toks.Count -ge 2) { $toks = $toks[1..($toks.Count - 1)] } else { $toks = @() }
+}
+
+# 2) Flags aceitas por cada fase. Valor $true = a flag consome o proximo token (ex.: --contratos X).
+$F1 = @{ "--dry-run" = $false; "--refresh" = $false; "--somente-parse" = $false; "--contratos" = $true }
+$F2 = @{ "--dry-run" = $false; "--refresh" = $false; "--somente-consolida" = $false;
+         "--dados-projetos" = $false; "--sqlite" = $false; "--recon" = $false; "--contratos" = $true }
+
+# 3) Parseia os argumentos recebidos em pares (flag, valor-ou-$null), validando-os.
+$pares = @()
+for ($i = 0; $i -lt $toks.Count; $i++) {
+    $tok = [string]$toks[$i]
+    if (-not $tok.StartsWith("--")) { Write-Error "argumento inesperado: '$tok' (esperava uma flag --algo)"; exit 1 }
+    $conhecida = $F1.ContainsKey($tok) -or $F2.ContainsKey($tok)
+    if (-not $conhecida) { Write-Error "flag desconhecida: '$tok' (ver COMO_USAR.html)"; exit 1 }
+    $consomeValor = ($F1.ContainsKey($tok) -and $F1[$tok]) -or ($F2.ContainsKey($tok) -and $F2[$tok])
+    $val = $null
+    if ($consomeValor) {
+        if ($i + 1 -ge $toks.Count) { Write-Error "a flag '$tok' exige um valor"; exit 1 }
+        $i++; $val = [string]$toks[$i]
+    }
+    $pares += , @($tok, $val)
+}
+
+# 4) Monta a lista de args de uma fase: so as flags que ela aceita (com valor, se houver).
+function Selecionar([hashtable]$aceitas) {
+    $out = @()
+    foreach ($p in $pares) {
+        if ($aceitas.ContainsKey($p[0])) {
+            $out += $p[0]
+            if ($null -ne $p[1]) { $out += $p[1] }
+        }
+    }
+    return , $out
+}
+
+# 5) Executa uma fase, isolando a falha: um erro NAO derruba a outra fase (try/catch +
+#    checagem do codigo de saida). Devolve o codigo (0 = ok).
+function Rodar([string]$nome, [string]$script, [string[]]$a) {
+    Write-Host ""
+    Write-Host "=== $nome === $(Split-Path $script -Leaf) $($a -join ' ')"
+    try {
+        & $script @a                                   # chama o run script aninhado
+        if ($LASTEXITCODE -ne 0) { Write-Host "$nome retornou codigo $LASTEXITCODE"; return $LASTEXITCODE }
+        return 0
+    } catch {
+        Write-Host "$nome FALHOU: $($_.Exception.Message)"   # absorve o erro terminante do filho
+        Write-Host "(a outra fase, se houver, continua)"
+        return 1
+    }
+}
+
+# 6) Executa cada fase pedida com os argumentos roteados.
+$rc = 0
+if ($fase -eq "1" -or $fase -eq "ambas") {
+    $c = Rodar "FASE 1 (LNC)" (Join-Path $raiz "fase1_lnc\run.ps1") (Selecionar $F1)
+    if ($c -ne 0) { $rc = $c }
+}
+if ($fase -eq "2" -or $fase -eq "ambas") {
+    $c = Rodar "FASE 2 (UCs)" (Join-Path $raiz "fase2_ucs\run_ucs.ps1") (Selecionar $F2)
+    if ($c -ne 0) { $rc = $c }
+}
+exit $rc

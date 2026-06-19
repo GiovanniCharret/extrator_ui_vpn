@@ -1,0 +1,128 @@
+{
+  "ECO 011/2018": {
+    "codese": "150",
+    "concessionaria": "ELETRONORTE",
+    "programa": "945",
+    "programa_label": "ELETRONORTE - CEA REVISÃO 1"
+  },
+  "ECO 015/2019": {
+    "codese": "2",
+    "concessionaria": "EQUATORIAL MARANHAO",
+    "programa": "1502",
+    "programa_label": "CEMAR 10ª TRANCHE REVISÃO 3"
+  },
+  "ECO 019/2020": {
+    "codese": "1025",
+    "concessionaria": "RORAIMA ENERGIA",
+    "programa": "1539",
+    "programa_label": "Boa Vista Energia 5ª Tranche Revisão 5"
+  },
+  "ECO 021/2020": {
+    "codese": "156",
+    "concessionaria": "EQUATORIAL PARA",
+    "programa": "1531",
+    "programa_label": "CELPA 7ª TRANCHE REVISÃO 3"
+  },
+  "ECO 025/2021": {
+    "codese": "20",
+    "concessionaria": "COELBA",
+    "programa": "1520",
+    "programa_label": "COELBA 11ª TRANCHE REVISÃO 2"
+  },
+  "ECO 027/2021": {
+    "codese": "3",
+    "concessionaria": "EQUATORIAL PIAUI",
+    "programa": "1542",
+    "programa_label": "CEPISA 7ª TRANCHE REVISÃO 4"
+  },
+  "ECO 028/2024": {
+    "codese": "156",
+    "concessionaria": "EQUATORIAL PARA",
+    "programa": "1546",
+    "programa_label": "Pará 8ª Tranche Revisão 1"
+  },
+  "ECO 029/2024": {
+    "codese": "3",
+    "concessionaria": "EQUATORIAL PIAUI",
+    "programa": "1530",
+    "programa_label": "Piauí 8ª Tranche"
+  },
+  "ECO 030/2024": {
+    "codese": "153",
+    "concessionaria": "ENERGISA ACRE",
+    "programa": "1556",
+    "programa_label": "Acre 8ª Tranche Revisão 1"
+  },
+  "ECO 031/2025": {
+    "codese": "20",
+    "concessionaria": "COELBA",
+    "programa": "1553",
+    "programa_label": "Coelba 12ª Tranche - Metas Excepcionais"
+  },
+  "ECO 032/2025": {
+    "codese": "1025",
+    "concessionaria": "RORAIMA ENERGIA",
+    "programa": "1538",
+    "programa_label": "Roraima 6ª Tranche"
+  },
+  "ECO 033/2025": {
+    "codese": "1200",
+    "concessionaria": "CERCI",
+    "programa": "1543",
+    "programa_label": "CERCI 3ª TRANCHE"
+  },
+  "ECO 035/2025": {
+    "codese": "152",
+    "concessionaria": "ENERGISA RONDONIA",
+    "programa": "1535",
+    "programa_label": "Rondônia 8ª Tranche"
+  },
+  "ECO 036/2025": {
+    "codese": "2",
+    "concessionaria": "EQUATORIAL MARANHAO",
+    "programa": "1541",
+    "programa_label": "Maranhão 12ª Tranche Metas Excepcionais"
+  },
+  "ECO 037/2025": {
+    "codese": "8",
+    "concessionaria": "ENERGISA PARAIBA",
+    "programa": "1548",
+    "programa_label": "Paraíba 7ª Tranche Metas Excepcionais"
+  },
+  "ECO 038/2025": {
+    "codese": "3",
+    "concessionaria": "EQUATORIAL PIAUI",
+    "programa": "1545",
+    "programa_label": "Piauí 9ª Tranche"
+  },
+  "ECO 039/2025": {
+    "codese": "96",
+    "concessionaria": "CELG-D",
+    "programa": "1549",
+    "programa_label": "Goiás 6ª Tranche Metas Excepcionais"
+  },
+  "ECO 040/2025": {
+    "codese": "141",
+    "concessionaria": "CEA",
+    "programa": "1547",
+    "programa_label": "Amapá 2ª Tranche"
+  },
+  "ECO 041/2025": {
+    "codese": "152",
+    "concessionaria": "ENERGISA RONDONIA",
+    "programa": "1554",
+    "programa_label": "Rondônia 9º Tranche"
+  },
+  "ECO 042/2025": {
+    "codese": "141",
+    "concessionaria": "CEA",
+    "programa": "1555",
+    "programa_label": "Amapá 3ª Tranche"
+  },
+  "ECO 043/2025": {
+    "codese": "153",
+    "concessionaria": "ENERGISA ACRE",
+    "programa": "1550",
+    "programa_label": "Acre 9ª Tranche"
+  }
+}

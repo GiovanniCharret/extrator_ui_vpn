@@ -88,8 +88,17 @@ projeto novo (recomendação: separar — stack/runtime/deploy diferentes do pip
 - Execução do pipeline (na VPN): `.\run.ps1` — **modo automático** (refresh/retomar pelo estado);
   flags `--dry-run`, `--contratos "A,B"`, `--refresh` (força tudo), `--somente-parse`. O `run.ps1`
   **cria a venv sozinho na 1ª execução** (basta ter o `uv`).
-- **`deploy_minimo/`**: snapshot do conjunto mínimo runnable (6 `.py` + dados + `run.ps1` +
-  `COMO_RODAR.html`) — referência/versionamento; o builder canônico do pacote é `deploy\fazer_pacote.ps1`.
+- **`deploy_minimo/`**: snapshot do conjunto mínimo runnable, organizado em **duas fases
+  autocontidas** (cada uma com seu pacote, `config/`, `requirements.txt` mínimo e `COMO_RODAR.html`):
+  - `fase1_lnc/` — Fase 1 (extração LPT): `src/` + `scripts/` + `config/programas_*` +
+    `base_contratos.json` + `run.ps1`.
+  - `fase2_ucs/` — Fase 2 (UCs via SSRS): `ucs/` + `config/ucs_map.json` + `run_ucs.ps1` +
+    `run_recon.ps1`.
+  - `run_tudo.ps1` (raiz) orquestra as duas, **roteando cada argumento só para a fase que o aceita**
+    (ex.: `--sqlite` só cai na Fase 2); `COMO_USAR.html` documenta o uso e cada argumento. Cada fase
+    cria sua própria venv na 1ª execução.
+  Referência/versionamento; os builders canônicos dos pacotes da VPN são `deploy\fazer_pacote*.ps1`
+  (`fazer_pacote.ps1` = Fase 1; `fazer_pacote_ucs.ps1` / `fazer_pacote_recon.ps1` = Fase 2).
 
 ## Regras críticas
 

@@ -18,13 +18,19 @@ FIXTURE = BASE_DIR / "tests" / "fixtures" / "exemplo_ucs.csv"
 LOG = logging.getLogger("test")
 
 
-def test_extrair_linhas_seleciona_colunas_certas():
+def test_extrair_linhas_default_so_odi_e_uc():
     linhas = consolida.extrair_linhas(FIXTURE)
     # a fixture tem 2 linhas reais + 1 linha-placeholder vazia (do SSRS) -> 2
     assert len(linhas) == 2
-    # (odi, uc, cod_projeto, nome_projeto, cod_programa)
-    assert linhas[0] == ("10090247", "111", "374944", "PROJ TESTE A, COM VIRGULA", "1520")
-    assert linhas[1][0] == "10090248" and linhas[1][1] == "222"
+    # default = só (odi, uc) — sem cod_programa, sem dados de projeto
+    assert linhas[0] == ("10090247", "111")
+    assert linhas[1] == ("10090248", "222")
+
+
+def test_extrair_linhas_com_dados_projetos():
+    linhas = consolida.extrair_linhas(FIXTURE, incluir_projetos=True)
+    # (odi, uc, cod_projeto, nome_projeto)
+    assert linhas[0] == ("10090247", "111", "374944", "PROJ TESTE A, COM VIRGULA")
 
 
 def test_extrair_linhas_ignora_placeholder_vazio():
@@ -58,10 +64,22 @@ def test_consolidar_csv_prefixa_contrato_e_soma(tmp_path):
 
     with open(saida, encoding=config.CSV_ENCODING, newline="") as fh:
         linhas = list(csv.reader(fh, delimiter=config.CSV_DELIMITADOR))
-    assert linhas[0] == consolida.CABECALHO_SAIDA          # cabeçalho
+    assert linhas[0] == ["contrato", "odi", "uc"]          # cabeçalho default (enxuto)
     # primeira linha de dados traz o contrato prefixado
-    assert linhas[1][0] == "ECO 025/2021"
-    assert linhas[1][1] == "10090247" and linhas[1][2] == "111"
+    assert linhas[1] == ["ECO 025/2021", "10090247", "111"]
+
+
+def test_consolidar_csv_com_dados_projetos(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "ECO_025_2021.csv").write_bytes(FIXTURE.read_bytes())
+    mapa = {"ECO 025/2021": {"codese": "20", "programa": "1520"}}
+    saida = tmp_path / "out.csv"
+    consolida.consolidar_csv(mapa, raw, saida, LOG, incluir_projetos=True)
+    with open(saida, encoding=config.CSV_ENCODING, newline="") as fh:
+        linhas = list(csv.reader(fh, delimiter=config.CSV_DELIMITADOR))
+    assert linhas[0] == ["contrato", "odi", "uc", "cod_projeto", "nome_projeto"]
+    assert linhas[1] == ["ECO 025/2021", "10090247", "111", "374944", "PROJ TESTE A, COM VIRGULA"]
 
 
 def test_consolidar_csv_ignora_contrato_sem_bruto(tmp_path):

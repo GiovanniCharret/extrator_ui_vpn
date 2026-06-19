@@ -1,0 +1,9 @@
+# Dependências de RUNTIME (deploy) — sem pytest/ferramentas de teste.
+# uv resolve as transitivas automaticamente.
+pdfplumber==0.11.9
+pywinauto==0.6.9
+pyautogui==0.9.54
+# cryptography entra via pdfplumber -> pdfminer.six. A 49+ NAO tem wheel p/ Windows
+# 32 bits (tentaria compilar com Rust/MSVC e falha). A 48.0.1 é a última com wheel
+# win32 — fixada p/ rodar em Windows 32 bits SEM compilar. Vale tb p/ 64 bits. Bug 19/06.
+cryptography==48.0.1

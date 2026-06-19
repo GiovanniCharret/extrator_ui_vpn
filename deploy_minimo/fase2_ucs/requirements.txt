@@ -1,0 +1,4 @@
+# Dependencias de RUNTIME (deploy) - sem pytest/ferramentas de teste.
+# uv resolve as transitivas automaticamente.
+requests==2.34.2
+requests-negotiate-sspi==0.5.2

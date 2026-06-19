@@ -57,6 +57,9 @@ def exportar(programa_texto: str, contrato: str, tipo: str, log: logging.Logger,
     `caminho_saida(contrato)` — nome único por contrato.
     """
     destino = destino or caminho_saida(contrato)  # nome do PDF vem do contrato, não do programa
+    # Garante output/pdf/ mesmo quando o destino vem PRONTO do main (que pula caminho_saida);
+    # sem isso o diálogo "Salvar como" do Print-to-PDF cai na última pasta usada. Bug 19/06.
+    destino.parent.mkdir(parents=True, exist_ok=True)
     if destino.exists():
         log.info("apagando PDF antigo (evita diálogo de sobrescrita): %s", destino)
         destino.unlink()

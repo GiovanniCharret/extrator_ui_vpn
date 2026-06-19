@@ -240,6 +240,52 @@ query → decide CSV × SQLite × Postgres com número real. **Sucesso [AUTO]:**
 
 ### Registro de execução (mais recente no topo)
 
+- **19/06/2026** — **Stack rodando na VPN (32 bits) OK.** Último ajuste: a Fase 1 não criava
+  `output/pdf/` numa pasta nova/limpa — o `mkdir` morava em `exportar_pdf.caminho_saida()`, que é
+  **pulado** quando o `main` passa o `destino` pronto; o diálogo Print-to-PDF então caía na última
+  pasta usada (a anterior). **Fix:** `exportar_pdf.exportar` faz `destino.parent.mkdir(...)` sempre.
+  Mesma classe de bug coberta no `scripts/inspecionar_app.py` (screenshot/dump de falha agora
+  criam `INSPECAO_DIR`). Suíte 93/93. `pacote_completo_v3.zip`.
+- **19/06/2026** — **CAUSA RAIZ FINAL: VPN é Windows 32 bits + regressão minha no requirements.**
+  O Fix C (forçar 64 bits) era ERRADO: o PC da VPN é **Windows 32 bits** → Python 64 bits não roda
+  (`os error 216`), e ainda quebrou a Fase 2 que funcionava. O problema real da Fase 1: o
+  `deploy_minimo/fase1_lnc/requirements.txt` que criei ficou **sem pin**, então o uv puxava
+  `cryptography==49` — que **não tem wheel p/ Windows 32 bits** → tentava compilar (Rust/MSVC) e
+  falhava. (O `requirements.txt` original do repo já tinha `cryptography==48.0.1`, por isso o
+  pacote_v13 funcionava.) **Fix definitivo:** (a) **revertido o forçar-64-bits** em todos os run
+  scripts (volta a `uv venv`, que escolhe Python compatível com o SO — 32 ou 64); (b) **fixado
+  `cryptography==48.0.1`** (última com wheel win32) no fase1 requirements. Confirmado via PyPI que
+  48.0.1/pillow 12.2/pypdfium2 5.10 têm wheel win32; `uv pip compile` resolve sem conflito (sem
+  compilar). `pacote_completo_v2.zip` gerado. Portátil p/ 32 **e** 64 bits.
+- **19/06/2026** — **Falha recorrente era cópia parcial na VPN.** Os fixes (A/B/C) estavam certos no
+  repo (`run.ps1` 2067 bytes), mas a VPN seguia com o `run.ps1` antigo (1658 bytes) — ao copiar por
+  cima da pasta existente, o `.venv` travado fazia o script velho sobrar. **Solução:** builder
+  `deploy/fazer_pacote_completo.ps1` gera `pacote_completo_v1.zip` (deploy_minimo inteiro,
+  consistente, scripts renomeados) com `LEIA-ME` mandando **apagar a pasta/venv antiga antes de
+  extrair**. Fim do risco de versão misturada.
+- **19/06/2026** — **CAUSA RAIZ do "pywinauto": venv de 32 bits.** O Fix A revelou o erro real do
+  `uv pip install` da Fase 1: o `uv` criava a venv com **Python 32 bits** (`i686-pc-windows-msvc`),
+  e a `cryptography` (transitiva de `pdfplumber`→`pdfminer-six`) **não tem wheel p/ Windows 32 bits**
+  → tentava compilar (Rust/maturin) e falhava em `link.exe not found`. Como o install abortava, NADA
+  era instalado — daí o `ModuleNotFoundError: pywinauto` (sintoma, não causa). **Fix C:** todos os
+  run scripts (repo + `deploy_minimo`) passam a forçar **Python 64 bits managed**
+  (`uv venv --python cpython-3.12-windows-x86_64-none`). Validado no DEV: venv 64 bits instala
+  `pdfplumber`+`cryptography 49`+`pywinauto` via wheel, sem compilar. **Na VPN: apagar a `.venv`
+  de 32 bits antes de re-rodar** (o `uv venv` só recria se ausente).
+- **19/06/2026** — **Bug de bootstrap do `run.ps1` (Fase 1) + orquestrador.** Na VPN, o
+  `run_tudo.ps1 ambas` quebrou na Fase 1: `ModuleNotFoundError: pywinauto`. Causa: o `run.ps1`
+  (Fase 1) ainda tinha a lógica antiga — só instalava deps **se a venv não existisse**; o 1º
+  download do pywinauto falhou (blip de rede), a venv ficou criada-porém-incompleta e as
+  re-execuções **pulavam** a instalação. **Fix A:** `run.ps1` (repo + `deploy_minimo/fase1_lnc`)
+  agora **sincroniza deps sempre** (idempotente), igual ao `run_ucs.ps1` — re-rodar retoma a
+  instalação. **Fix B:** `deploy_minimo/run_tudo.ps1` ficou **resiliente** (falha de uma fase não
+  derruba a outra). Validado no DEV: `run_tudo.ps1 2 --dry-run` cria venv, instala, lista os 21
+  (exit 0), Fase 1 intocada. (A Fase 2 nunca dependeu de pywinauto.)
+- **19/06/2026** — **Ajustes na base (pedido do usuário):** removida a coluna `cod_programa`
+  (redundante — é o próprio código do programa do contrato, constante por contrato); `cod_projeto`/
+  `nome_projeto` agora são **opcionais** via flag `--dados-projetos` (default = base enxuta
+  `contrato;odi;uc`). Validado nos brutos reais: default 145.389 linhas (sem as 2 placeholders),
+  CSV 10,86 MB. Suíte 93/93. Gerado `pacote_ucs_v3.zip`.
 - **18/06/2026** — **VALIDAÇÃO VPN OK — pipeline completo rodou (`pacote_ucs_v1`): 21/21 baixados,
   0 falhas.** `consolidado_ucs.csv` + `ucs.db` gerados. **Benchmark:** 145.391 linhas, CSV 11,55 MB,
   SQLite 18,35 MB, lookup ODI 0,14 ms → **storage decidido = SQLite** (Postgres/SQLAlchemy
