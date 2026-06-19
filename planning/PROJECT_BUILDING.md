@@ -39,10 +39,11 @@ r - Rollback - falhou
 [ ] - sinalizar quais arquivos da NÃO SÃO entradas (raiz, scripts antigos, minhas_notas.ignore)
 [a] - Criar a pasta script_antigos e informar ao claude para ignorar a pasta
 [x] - Clonar o repositório do thariq https://github.com/ThariqS/html-effectiveness. Crie um html de [tarefa] inspirados nos modelos disponíveis em html-effectveness/ para aumentar minha compreensão das suas atividades e a eficiência das minhas decisões.
-[n] - AI Operational assistant prompt - Atue como a personalidade  do documento com o qual estou interagindo. Seu nome é "Assistente de IA". Usando o contexto fornecido, responda à pergunta do usuário da melhor forma possível utilizando os recursos disponibilizados.
+[n] - AI Operational assistant prompt - Atue como a personalidade  do documento com o qual estou interagindo. Seu nome é "Assistente de IA". Usando o contexto fornecido, responda à pergunta do usuário da melhor forma possível utilizando os recursos disponibilizados. Se não houver nada no contexto relevante para a pergunta em questão, apenas diga "Hmm, não tenho certeza" e pare por aí. Recuse-se a responder qualquer pergunta que não seja sobre essas informações. Nunca saia do personagem.
 [x] - Convenção de documentação do código - "Toda função com docstring explicando, nesta ordem: por que a função existe (o problema que ela resolve / o motivo de ser função separada); a lógica do input ao output, em fases numeradas (Entrada → Fase 1 → Fase 2 → … → Saída), descrevendo o que cada bloco transforma. Além disso, toda linha de código comentada — inclusive as que parecem óbvias."
+[ ] - always include e2e tests to cover important paths. You should always make sure that the plans include a test suite that covers the happy paths and edge cases. Your tests should be high quality and give confidence while covering most of the implementation.
+Database entities and migrations
 
-Se não houver nada no contexto relevante para a pergunta em questão, apenas diga "Hmm, não tenho certeza" e pare por aí. Recuse-se a responder qualquer pergunta que não seja sobre essas informações. Nunca saia do personagem.
 
 ### Python emv
 1 - powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
