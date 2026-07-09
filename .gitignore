@@ -10,6 +10,8 @@ bug_fix/
 src/estado_execucao.json
 # Estado operacional da Fase 2 (UCs) — vive em ucs/ mas NÃO é código
 ucs/estado_ucs.json
+# Estado do sync DEV->VPS (contagem de linhas do último envio) — NÃO é código
+estado_sync.json
 
 # Documentos HTML gerados (derivados dos .md — regeneráveis)
 *.html

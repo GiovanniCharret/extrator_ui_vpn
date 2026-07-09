@@ -11,83 +11,108 @@ e consolidar ODI/UF/Município em CSV. O laço é dirigido por `base_contratos.j
 (contratos com `vigente != "Encerrado"` **e** que **não** sejam `ECM` — estes são
 contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`).
 
-**Escopo deste repositório = Fase 1 (extração LPT)** — encerrada e commitada em 17/06/2026
-(pendente só a validação VPN final do `pacote_v13`). As **fases futuras** previstas pelo usuário
-(Fase 2: cruzar ODIs com Unidades Consumidoras via SQL/SSRS; Fase 3: site que valida e reporta
-avanço a partir de planilhas de beneficiários) estão **registradas em `planning/PLAN.md` → "Fases
-futuras"**, **ainda não planejadas**. Há uma **decisão pendente** sobre se elas vivem aqui ou num
-projeto novo (recomendação: separar — stack/runtime/deploy diferentes do pipeline de UI).
+**Duas fases já construídas e rodando na VPN:**
+- **Fase 1 (`src/`, extração LPT)** — automação de UI do LPT; plano em `planning/PLAN_part1.md`.
+- **Fase 2 (`ucs/`, extração de UCs via SSRS)** — sem UI: baixa cada contrato do relatório
+  SSRS `22.3-UCs_paraAprovacao` (HTTP/SSPI) e consolida ODI↔UC; plano em `planning/PLAN_part2.md`.
+
+A **Fase 3** prevista (site que valida e reporta avanço a partir de planilhas de beneficiários)
+ainda **não foi planejada** — ver `planning/PLAN_part2.md` e a nota
+`planning/2026-07-08-atualizacao-diaria-entrada-site.md`.
 
 ## Arquitetura (visão rápida)
 
-- **Pipeline** (`src/`): `main.py` (laço/CLI/estado) → `contratos.py` (vigentes + map) →
-  `lnc_app.py` (conexão e navegação idempotente no LNC; seleciona tipo + programa) →
-  `exportar_pdf.py` (1 PDF por contrato, com as esperas estruturais) → `parse_pdf.py`
-  (pdfplumber, faixas de X por cabeçalho; ODI alfanumérico) → `output/consolidado.csv`.
-- **Retomada é por ESTADO, não por arquivo** (`src/estado_execucao.json`): `main.decidir_modo`
-  escolhe sozinho `refresh` (re-exporta tudo = dados frescos) ou `retomar` (só o que faltou),
-  **sem flag**; o estado é gravado **após cada contrato** (robusto a Ctrl+C/queda/sono) e um
-  contrato que falha 3× vira `desistido`. A consolidação reparseia todos os PDFs presentes
-  (`output/pdf/<contrato>.pdf`) e regrava o CSV inteiro (idempotente).
+**Fase 1 — pipeline de UI (`src/`):** `main.py` (laço/CLI/estado) → `contratos.py`
+(vigentes + map) → `lnc_app.py` (conexão e navegação idempotente no LNC; seleciona tipo +
+programa) → `exportar_pdf.py` (1 PDF por contrato, com as esperas estruturais) →
+`parse_pdf.py` (pdfplumber, faixas de X por cabeçalho; ODI alfanumérico) →
+`output/consolidado.csv`.
 - **`scripts/`**: `inspecionar_app.py` (dump de telas, F1; também usado em runtime p/ screenshot
   de falha — best-effort) e `gerar_mapeamento.py` (enumera o dropdown, F2). Não são o pipeline.
-- Fase 1 (F0–F6) **concluída**; histórico/detalhes por fase no Controle de progresso do
-  `planning/PLAN.md` (planos por fase em `PLAN_F1_F3.md`/`PLAN_F5.md`).
+- Fase 1 (F0–F6) **concluída**; planos por fase em `planning/PLAN_F1_F3.md` / `PLAN_F5.md`;
+  Controle de progresso em `planning/PLAN_part1.md`.
+
+**Fase 2 — pipeline SSRS sem UI (`ucs/`):** `main.py` (laço/CLI/estado, espelha o da Fase 1) →
+`ssrs_client.py` (protocolo SSRS: sessão SSPI via `requests-negotiate-sspi`, descoberta de
+parâmetros por SOAP `GetItemParameters` com fallback 2005, `render_csv`) → `download.py`
+(1 CSV bruto por contrato, resolvendo `codese`/`programa` pelo map) → `consolida.py`
+(consolida ODI↔UC; SQLite opcional) → `output_ucs/consolidado_ucs.csv`. `recon.py` é a
+recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
+
+- **Retomada por ESTADO, não por arquivo** (padrão comum às duas fases —
+  `src/estado_execucao.json` e `ucs/estado_ucs.json`): `decidir_modo` escolhe sozinho
+  `refresh` (re-extrai tudo = dados frescos) ou `retomar` (só o que faltou), **sem flag**; o
+  estado é gravado **após cada contrato** (robusto a Ctrl+C/queda/sono) e um contrato que
+  falha 3× vira `desistido`. A consolidação reprocessa todos os brutos presentes
+  (`output/pdf/<contrato>.pdf` na F1; `output_ucs/raw/<contrato>.csv` na F2) e regrava a saída
+  inteira (idempotente).
 
 ## Modelo de operação — LEIA ANTES DE QUALQUER COISA
 
-- **Claude NÃO tem acesso à máquina da VPN**, onde o LPT roda. Desenvolvimento acontece aqui
-  (DEV); a validação real é feita **pelo usuário** na VPN, via pacotes + roteiros numerados
-  (`planning/TESTES.md`), com resultados trazidos de volta em `vpn_resultados/`.
+- **Claude NÃO tem acesso à máquina da VPN**, onde o LPT/SSRS rodam. Desenvolvimento acontece
+  aqui (DEV); a validação real é feita **pelo usuário** na VPN, via pacotes numerados, com
+  resultados trazidos de volta em `vpn_resultados/`.
 - **Execução cega:** todo script deve gravar console, tracebacks completos e resultados
-  estruturados em `output/` — nada pode depender de observar a tela ao vivo. Uma falha
-  silenciosa desperdiça uma viagem inteira do usuário.
-- Automação de UI na VPN só funciona com a **sessão RDP aberta, em foco e desbloqueada**.
-- Detalhes completos: `planning/PLAN.md`, seção "Modelo de operação: DEV ↔ VPN".
+  estruturados em `output/` (F1) / `output_ucs/` (F2) — nada pode depender de observar a tela
+  ao vivo. Uma falha silenciosa desperdiça uma viagem inteira do usuário.
+- Automação de UI na VPN (Fase 1) só funciona com a **sessão RDP aberta, em foco e desbloqueada**.
+  A Fase 2 (SSRS) usa a credencial da sessão Windows via SSPI — sem UI.
+- Detalhes completos: `planning/PLAN_part1.md`, seção "Modelo de operação: DEV ↔ VPN".
 
 ## Documentação
 
-- TODA a documentação de planejamento vive em **`planning/`**; o documento-chave é
-  **`planning/PLAN.md`** (inclui o Controle de progresso — status por fase, próximos passos
-  e registro de execução, que devem ser atualizados a cada sessão de trabalho).
-- Mapa de testes e roteiros da VPN: `planning/TESTES.md`.
+- TODA a documentação de planejamento vive em **`planning/`**; os documentos-chave são
+  **`planning/PLAN_part1.md`** (Fase 1) e **`planning/PLAN_part2.md`** (Fase 2), cada um com
+  seu Controle de progresso (status, próximos passos, registro de execução — atualizar a cada
+  sessão de trabalho).
 - **Siga `planning/BEHAVIORAL_GUIDELINES.md` em todo desenvolvimento**: pensar antes de codar
   (explicitar premissas, perguntar em vez de assumir), simplicidade primeiro (mínimo de código,
   sem abstrações especulativas), mudanças cirúrgicas (cada linha rastreável ao pedido),
   critérios de sucesso verificáveis.
 - **Não altere `planning/BEHAVIORAL_GUIDELINES.md` nem `planning/PROJECT_BUILDING.md`** (meta-docs
-  do usuário). Fases e progresso vivem em `planning/PLAN.md`.
-- **Convenção de documentação do código** (vale para a F5 e código novo): toda função com docstring
-  explicando *por que existe* + a lógica do input ao output *em fases numeradas*; e toda linha de
-  lógica comentada. Exemplo no topo do `PLAN_F5.md`.
+  do usuário). Fases e progresso vivem nos `PLAN_part*.md`.
+- **Convenção de documentação do código** (obrigatória em código novo — toda a Fase 2 segue): toda
+  função com docstring explicando *por que existe* + a lógica do input ao output *em fases
+  numeradas*; e toda linha de lógica comentada. Exemplo no topo do `PLAN_F5.md`.
 
 ## Entradas e NÃO-entradas do pipeline
 
-- **Entradas:** `base_contratos.json` (raiz), `config/programas_map.json`,
+- **Entradas F1:** `base_contratos.json` (raiz), `config/programas_map.json`,
   `config/programas_dropdown.json`.
+- **Entradas F2:** `base_contratos.json` (mesma base de contratos vigentes) + `config/ucs_map.json`
+  (contrato → `{codese, concessionaria, programa, programa_label}`; auto-casado 21/21 na recon).
 - **NÃO são entradas:** `minhas_notas/` (ignorar por completo), `manuais/` (apenas referência
   visual do fluxo manual + origem da fixture), `planning/` (documentação), `bug_fix/` (registros),
   `vpn_resultados/` (resultados trazidos da VPN — insumo de análise, não do pipeline).
-- **Saídas:** `output/` (pdf/, logs/, inspecao/, consolidado.csv) — não versionar. O **estado
-  da rodada** (`src/estado_execucao.json` — dirige a auto-retomada; fora de `output/` p/ não
-  confundir com resultados) também não é versionado.
+- **Saídas F1:** `output/` (pdf/, logs/, inspecao/, consolidado.csv) — não versionar.
+  **Saídas F2:** `output_ucs/` (raw/, logs/, recon/, consolidado_ucs.csv, ucs.db) — não versionar.
+- O **estado de cada rodada** (`src/estado_execucao.json`, `ucs/estado_ucs.json` — dirigem a
+  auto-retomada; ficam fora de `output*/` p/ não confundir com resultados) também não é versionado.
 
 ## Ambiente e execução
 
 - Python via **uv**: `uv venv` → `.venv\Scripts\activate` → `uv pip install -r requirements.txt`.
   Nova dependência: `uv pip install X` + `uv pip freeze > requirements.txt` (sem BOM — usar
   `Out-File -Encoding ascii` no PowerShell).
-- Testes offline (DEV ou VPN): `pytest tests/` — separados dos scripts, um arquivo por fase;
-  fase única: `pytest tests/test_f0_ambiente.py -v`.
-- Pacote para a VPN: `powershell -ExecutionPolicy Bypass -File deploy\fazer_pacote.ps1 -Versao N`.
-  **Anti-bloqueio de e-mail:** o zip sai com `.ps1`/`.py` renomeados para `*.renomeado.txt`
-  (o filtro corporativo barra zips com scripts); o `LEIA-ME_PRIMEIRO.txt` interno traz o
-  comando único de restauração.
+- Testes offline (DEV ou VPN): `pytest tests/` — separados dos scripts; F1 = `test_f0..f5`,
+  F2 = `test_ucs_*`. Fase única: `pytest tests/test_ucs_ssrs.py -v`.
+- Pacote para a VPN: `powershell -ExecutionPolicy Bypass -File deploy\fazer_pacote.ps1 -Versao N`
+  (F1); `fazer_pacote_ucs.ps1` / `fazer_pacote_recon.ps1` (F2); `fazer_pacote_completo.ps1`
+  (as duas fases, a partir de `deploy_minimo/`). **Anti-bloqueio de e-mail:** o zip sai com
+  `.ps1`/`.py` renomeados para `*.renomeado.txt` (o filtro corporativo barra zips com scripts);
+  o `LEIA-ME_PRIMEIRO.txt` interno traz o comando único de restauração.
 - Na VPN (usuário): `deploy\instalar.ps1` (setup) e `deploy\coletar.ps1` (zipa `output/` +
   `src/estado_execucao.json` em `resultados_<data>.zip`).
-- Execução do pipeline (na VPN): `.\run.ps1` — **modo automático** (refresh/retomar pelo estado);
-  flags `--dry-run`, `--contratos "A,B"`, `--refresh` (força tudo), `--somente-parse`. O `run.ps1`
-  **cria a venv sozinho na 1ª execução** (basta ter o `uv`).
+- Execução na VPN — **modo automático** (refresh/retomar pelo estado); cada `run*.ps1`
+  **cria a venv sozinho na 1ª execução** (basta ter o `uv`):
+  - **Fase 1:** `.\run.ps1` — flags `--dry-run`, `--contratos "A,B"`, `--refresh`, `--somente-parse`.
+  - **Fase 2:** `.\run_ucs.ps1` — flags `--dry-run`, `--contratos "A,B"`, `--refresh`,
+    `--somente-consolida`, `--dados-projetos` (inclui cod/nome do projeto), `--sqlite`
+    (também carrega `ucs.db`), `--recon` (roda a recon U0 em vez do pipeline); `.\run_recon.ps1`
+    é o atalho da recon.
+- **VPN é Windows 32 bits:** NÃO forçar arquitetura no `uv venv` (forçar 64 bits quebra com
+  `os error 216`). `cryptography` é pinado em **`48.0.1`** (última versão com wheel win32; ≥49
+  tentaria compilar com Rust/MSVC e falha). Não desfazer esses pinos.
 - **`deploy_minimo/`**: snapshot do conjunto mínimo runnable, organizado em **duas fases
   autocontidas** (cada uma com seu pacote, `config/`, `requirements.txt` mínimo e `COMO_RODAR.html`):
   - `fase1_lnc/` — Fase 1 (extração LPT): `src/` + `scripts/` + `config/programas_*` +
@@ -103,7 +128,8 @@ projeto novo (recomendação: separar — stack/runtime/deploy diferentes do pip
 ## Regras críticas
 
 - **Não usar o botão Rel.Excel** do LPT (demora minutos; o fluxo é via Print to PDF).
-- Timeouts, títulos de janela e seletores: **centralizados em `src/config.py`** — nunca
+- Timeouts, títulos de janela e seletores (F1) ficam **centralizados em `src/config.py`**;
+  URLs/endpoints SOAP, nomes de parâmetro SSRS e caminhos (F2) em **`ucs/config.py`** — nunca
   espalhados pelo código. Esperas estruturais (janela existir/sumir, botão habilitar,
   arquivo estável), nunca sleep fixo como mecanismo principal.
 - A geração do PDF desabilita o botão Imprimir e pode levar ~1 min (`TIMEOUT_GERACAO=300`).
@@ -114,3 +140,8 @@ projeto novo (recomendação: separar — stack/runtime/deploy diferentes do pip
   por padrão; ex.: Piauí 8ª = `Fonte Alternativa`). O relatório filtra por programa **E** tipo, e o
   tipo é selecionado em **todo** contrato (persiste entre iterações). `contratos.validar_mapeamento`
   exige ambos (tipo ∈ `config.TIPOS_PROJETO`).
+- `config/ucs_map.json` (F2) é manual/auto-casado: `{contrato: {codese, concessionaria, programa,
+  programa_label}}`. `codese` e `programa` são os DOIS parâmetros em cascata do relatório SSRS
+  (`22.3-UCs_paraAprovacao`) — códigos numéricos, não texto. O CSV do SSRS vem `utf-8-sig`,
+  delimitado por vírgula, com decimais brasileiros entre aspas; linhas placeholder (ODI e UC
+  ambos vazios = contrato sem UCs) são descartadas na consolidação.

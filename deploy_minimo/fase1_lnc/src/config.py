@@ -89,8 +89,8 @@ DATA_INICIO_PADRAO = "01/01/2004"              # TMaskEdit; conferir, não alter
 
 # --- Timeouts (segundos) -------------------------------------------------
 TIMEOUT_ABRIR_APP = 60        # LNC.exe iniciar e exibir a janela principal
-TIMEOUT_PREVIEW = 180         # "Visualizar" -> janela Print Preview pronta (query SQL)
-TIMEOUT_GERACAO = 300         # botão Imprimir desabilitado durante a geração (~1 min medido)
+TIMEOUT_PREVIEW = 60         # "Visualizar" -> janela Print Preview pronta (query SQL)
+TIMEOUT_GERACAO = 100         # botão Imprimir desabilitado durante a geração (~1 min medido)
 TIMEOUT_DIALOGO = 30          # diálogos comuns (Salvar como)
 TIMEOUT_SOBRESCRITA = 3       # diálogo intermitente de sobrescrita
 TIMEOUT_PROGRESSO = 120       # janela "Printing progress" sumir

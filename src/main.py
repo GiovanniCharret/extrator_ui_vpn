@@ -11,7 +11,7 @@ import json
 import logging
 from collections import Counter
 
-from src import config, contratos, exportar_pdf, parse_pdf
+from src import config, contratos, exportar_pdf, lnc_app, parse_pdf
 
 
 def _destino(pdf_dir, contrato):
@@ -409,6 +409,11 @@ def main(argv=None):
             for pl in planos
         ]
     else:                                                # Fase 4b: laço de UI (exporta de verdade)
+        # Opção B (08/07/2026): garante UMA instância limpa do LNC antes do laço. Se a
+        # pessoa deixou o LNC aberto e navegado à mão, os painéis de filtro empilhados
+        # tornam 'Tipo de Projeto'/combos ambíguos (ElementAmbiguousError) e quebram a
+        # seleção. Fechar e reabrir do zero reproduz o caminho validado (um painel só).
+        lnc_app.fechar_instancias_existentes(log)
         def _persistir_parcial(resultados_ate_agora):    # grava o estado APÓS cada contrato
             # estado interino: status/tentativas corretos; 'linhas' (=[] aqui) só no fim.
             # Se a rodada morrer (Ctrl+C/queda/sono), este arquivo já permite retomar.
