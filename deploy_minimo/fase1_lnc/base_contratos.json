@@ -8,7 +8,8 @@
     "valor_cde": 1715180,
     "participacao_cde": 0.8,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 108/2005": {
     "sigla": "CPFL",
@@ -19,7 +20,8 @@
     "valor_cde": 3959370,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 130/2006": {
     "sigla": "EQUATORIAL",
@@ -30,7 +32,8 @@
     "valor_cde": 11768420,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 135/2006": {
     "sigla": "EQUATORIAL",
@@ -41,7 +44,8 @@
     "valor_cde": 3152380,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 202/2007": {
     "sigla": "ENERGISA",
@@ -52,7 +56,8 @@
     "valor_cde": 88468460,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 261/2009": {
     "sigla": "EQUATORIAL",
@@ -63,7 +68,8 @@
     "valor_cde": 132086740,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 278/2009": {
     "sigla": "ENERGISA",
@@ -74,7 +80,8 @@
     "valor_cde": 103128440,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 280/2009": {
     "sigla": "ENERGISA",
@@ -85,7 +92,8 @@
     "valor_cde": 36807580,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 283/2010": {
     "sigla": "EQUATORIAL",
@@ -96,7 +104,8 @@
     "valor_cde": 364942720,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 284/2010": {
     "sigla": "ENERGISA",
@@ -107,7 +116,8 @@
     "valor_cde": 268281400,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 302/2010": {
     "sigla": "EQUATORIAL",
@@ -118,7 +128,8 @@
     "valor_cde": 16681170,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 306/2010": {
     "sigla": "CERCI",
@@ -129,7 +140,8 @@
     "valor_cde": 1516710,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 307/2010": {
     "sigla": "NEOENERGIA",
@@ -140,7 +152,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 310/2010": {
     "sigla": "COELCE",
@@ -151,7 +164,8 @@
     "valor_cde": 114433740,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 326/2012": {
     "sigla": "EQUATORIAL",
@@ -162,7 +176,8 @@
     "valor_cde": 21861550,
     "participacao_cde": 0.85,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 327/2013": {
     "sigla": "EQUATORIAL",
@@ -173,7 +188,8 @@
     "valor_cde": 201617510,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 328/2013": {
     "sigla": "AMPLA",
@@ -184,7 +200,8 @@
     "valor_cde": 7550160,
     "participacao_cde": 0.3,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 329/2013": {
     "sigla": "NEOENERGIA",
@@ -195,7 +212,8 @@
     "valor_cde": 1081570,
     "participacao_cde": 0.3,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 330/2013": {
     "sigla": "NEOENERGIA",
@@ -206,7 +224,8 @@
     "valor_cde": 2698050,
     "participacao_cde": 0.13,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 331/2013": {
     "sigla": "AMAZONAS",
@@ -217,7 +236,8 @@
     "valor_cde": 160246550,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 333/2013": {
     "sigla": "COPEL-DIS",
@@ -228,7 +248,8 @@
     "valor_cde": 5661490,
     "participacao_cde": 0.2,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 335/2013": {
     "sigla": "CEDRI",
@@ -239,7 +260,8 @@
     "valor_cde": 1201010,
     "participacao_cde": 0.7,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 338/2013": {
     "sigla": "ENERGISA",
@@ -250,7 +272,8 @@
     "valor_cde": 20267610,
     "participacao_cde": 0.5,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 339/2013": {
     "sigla": "NEOENERGIA",
@@ -261,7 +284,8 @@
     "valor_cde": 24069030,
     "participacao_cde": 0.4,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 340/2013": {
     "sigla": "NEOENERGIA",
@@ -272,7 +296,8 @@
     "valor_cde": 17641300,
     "participacao_cde": 0.4,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 341/2013": {
     "sigla": "ENERGISA",
@@ -283,7 +308,8 @@
     "valor_cde": 9120250,
     "participacao_cde": 0.7,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS 343/2013": {
     "sigla": "ENERGISA",
@@ -294,7 +320,8 @@
     "valor_cde": 88486120,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECFS-332/2013": {
     "sigla": "EQUATORIAL",
@@ -305,7 +332,8 @@
     "valor_cde": 213946460,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECM 001/2020": {
     "sigla": "EQUATORIAL",
@@ -316,7 +344,8 @@
     "valor_cde": 51732750,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECM 002/2021": {
     "sigla": "AMAZONAS",
@@ -327,7 +356,8 @@
     "valor_cde": 3355080,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECM 003/2021": {
     "sigla": "EQUATORIAL",
@@ -338,7 +368,8 @@
     "valor_cde": 325524290,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 004/2021": {
     "sigla": "RORAIMA",
@@ -349,7 +380,8 @@
     "valor_cde": 33459480,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECM 005/2021": {
     "sigla": "EQUATORIAL",
@@ -360,7 +392,8 @@
     "valor_cde": 41722700,
     "participacao_cde": 0.7,
     "tipo_contrato": "MLA",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECM 006/2021": {
     "sigla": "AMAZONAS",
@@ -371,7 +404,8 @@
     "valor_cde": 188687140,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECM 007/2021": {
     "sigla": "ENERGISA",
@@ -382,7 +416,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 008/2022": {
     "sigla": "ENERGISA",
@@ -393,7 +428,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 009/2022": {
     "sigla": "ENERGISA",
@@ -404,7 +440,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECM 010/2022": {
     "sigla": "ENERGISA",
@@ -415,7 +452,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 011/2022": {
     "sigla": "EQUATORIAL",
@@ -426,7 +464,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 012/2023": {
     "sigla": "EQUATORIAL",
@@ -437,7 +476,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 013/2023": {
     "sigla": "EQUATORIAL",
@@ -448,18 +488,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerramento"
-  },
-  "ECM 014/2024": {
-    "sigla": "EQUATORIAL",
-    "cnpj": "04895728000180",
-    "tranche": "5ª Tranche",
-    "uf": "PA",
-    "valor_contrato": 0,
-    "valor_cde": 0,
-    "participacao_cde": 0.0,
-    "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECM 015/2024": {
     "sigla": "ENERGISA",
@@ -470,7 +500,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECM 016/2025": {
     "sigla": "ENERGISA",
@@ -481,7 +512,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 017/2025": {
     "sigla": "ENERGISA",
@@ -492,7 +524,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 018/2025": {
     "sigla": "ENERGISA",
@@ -503,7 +536,8 @@
     "valor_cde": 92894750,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 019/2025": {
     "sigla": "RORAIMA",
@@ -514,7 +548,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 020/2025": {
     "sigla": "EQUATORIAL",
@@ -525,7 +560,8 @@
     "valor_cde": 56710530,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 021/2025": {
     "sigla": "EQUATORIAL",
@@ -536,7 +572,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 022/2025": {
     "sigla": "ENERGISA",
@@ -547,7 +584,8 @@
     "valor_cde": 27112320,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 023/2025": {
     "sigla": "ENERGISA",
@@ -558,7 +596,8 @@
     "valor_cde": 14889080,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 024/2025": {
     "sigla": "ENERGISA",
@@ -569,7 +608,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 026/2025": {
     "sigla": "EQUATORIAL",
@@ -580,7 +620,8 @@
     "valor_cde": 1130641900,
     "participacao_cde": 0.9,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECM 027/2025": {
     "sigla": "EQUATORIAL",
@@ -591,7 +632,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "MLA",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 001/2018": {
     "sigla": "COELBA",
@@ -602,7 +644,8 @@
     "valor_cde": 587197160,
     "participacao_cde": 0.65,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 002/2017": {
     "sigla": "ENERGISA",
@@ -613,7 +656,8 @@
     "valor_cde": 79387520,
     "participacao_cde": 0.65,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 004/2017": {
     "sigla": "ENERGISA",
@@ -624,7 +668,8 @@
     "valor_cde": 106992500,
     "participacao_cde": 0.83,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 005/2017": {
     "sigla": "ENERGISA",
@@ -635,7 +680,8 @@
     "valor_cde": 227566630,
     "participacao_cde": 0.65,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 006/2017": {
     "sigla": "AMAZONAS",
@@ -646,7 +692,8 @@
     "valor_cde": 70051610,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 007/2017": {
     "sigla": "EQUATORIAL",
@@ -657,7 +704,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 008/2017": {
     "sigla": "AMAZONAS",
@@ -668,7 +716,8 @@
     "valor_cde": 295302020,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 009/2017": {
     "sigla": "RORAIMA",
@@ -679,7 +728,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 010/2018": {
     "sigla": "EQUATORIAL",
@@ -690,7 +740,8 @@
     "valor_cde": 164392290,
     "participacao_cde": 0.95,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 011/2018": {
     "sigla": "EQUATORIAL",
@@ -701,7 +752,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECO 012/2018": {
     "sigla": "EQUATORIAL",
@@ -712,7 +764,8 @@
     "valor_cde": 31862860,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 013/2018": {
     "sigla": "EQUATORIAL",
@@ -723,7 +776,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 015/2019": {
     "sigla": "EQUATORIAL",
@@ -734,7 +788,8 @@
     "valor_cde": 182496740,
     "participacao_cde": 0.7,
     "tipo_contrato": "LPT",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECO 016/2019": {
     "sigla": "EQUATORIAL",
@@ -745,7 +800,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 017/2019": {
     "sigla": "EQUATORIAL",
@@ -756,7 +812,8 @@
     "valor_cde": 104342730,
     "participacao_cde": 0.6,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 018/2019": {
     "sigla": "COELBA",
@@ -767,7 +824,8 @@
     "valor_cde": 684394220,
     "participacao_cde": 0.65,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECO 019/2020": {
     "sigla": "RORAIMA",
@@ -778,7 +836,8 @@
     "valor_cde": 94173600,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECO 020/2020": {
     "sigla": "ENERGISA",
@@ -789,7 +848,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 021/2020": {
     "sigla": "EQUATORIAL",
@@ -800,7 +860,8 @@
     "valor_cde": 395073960,
     "participacao_cde": 0.7,
     "tipo_contrato": "LPT",
-    "vigente": "Encerramento"
+    "vigente": "Encerramento",
+    "operacioonal_2023-2025": true
   },
   "ECO 022/2021": {
     "sigla": "ENERGISA",
@@ -811,7 +872,8 @@
     "valor_cde": 76306800,
     "participacao_cde": 0.6,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 023/2021": {
     "sigla": "ENERGISA",
@@ -822,7 +884,8 @@
     "valor_cde": 149151060,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 024/2021": {
     "sigla": "EQUATORIAL",
@@ -833,7 +896,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 025/2021": {
     "sigla": "COELBA",
@@ -844,7 +908,8 @@
     "valor_cde": 605363570,
     "participacao_cde": 0.65,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 026/2021": {
     "sigla": "AMAZONAS",
@@ -855,7 +920,8 @@
     "valor_cde": 264819150,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": true
   },
   "ECO 027/2021": {
     "sigla": "EQUATORIAL",
@@ -866,7 +932,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 028/2024": {
     "sigla": "EQUATORIAL",
@@ -877,7 +944,8 @@
     "valor_cde": 1405858980,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 029/2024": {
     "sigla": "EQUATORIAL",
@@ -888,7 +956,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 030/2024": {
     "sigla": "ENERGISA",
@@ -899,7 +968,8 @@
     "valor_cde": 81979680,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 031/2025": {
     "sigla": "COELBA",
@@ -910,7 +980,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 032/2025": {
     "sigla": "RORAIMA",
@@ -921,7 +992,8 @@
     "valor_cde": 214147908,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 033/2025": {
     "sigla": "CERCI",
@@ -932,7 +1004,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": false
   },
   "ECO 035/2025": {
     "sigla": "ENERGISA",
@@ -943,7 +1016,8 @@
     "valor_cde": 156580760,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 036/2025": {
     "sigla": "EQUATORIAL",
@@ -954,7 +1028,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 037/2025": {
     "sigla": "ENERGISA",
@@ -965,7 +1040,8 @@
     "valor_cde": 1419540,
     "participacao_cde": 0.8,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 038/2025": {
     "sigla": "EQUATORIAL",
@@ -976,7 +1052,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": false
   },
   "ECO 039/2025": {
     "sigla": "EQUATORIAL",
@@ -987,7 +1064,8 @@
     "valor_cde": 44381590,
     "participacao_cde": 0.8,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": false
   },
   "ECO 040/2025": {
     "sigla": "EQUATORIAL",
@@ -998,7 +1076,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 041/2025": {
     "sigla": "ENERGISA",
@@ -1009,7 +1088,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECO 042/2025": {
     "sigla": "EQUATORIAL",
@@ -1020,7 +1100,8 @@
     "valor_cde": 8126530,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": false
   },
   "ECO 043/2025": {
     "sigla": "ENERGISA",
@@ -1031,7 +1112,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Andamento"
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   },
   "ECOT 001/2018": {
     "sigla": "EQUATORIAL",
@@ -1042,7 +1124,8 @@
     "valor_cde": 252755320,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 002/2017": {
     "sigla": "EQUATORIAL",
@@ -1053,7 +1136,8 @@
     "valor_cde": 147930520,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 003/2017": {
     "sigla": "AMAZONAS",
@@ -1064,7 +1148,8 @@
     "valor_cde": 195320970,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 004/2017": {
     "sigla": "EQUATORIAL",
@@ -1075,7 +1160,8 @@
     "valor_cde": 296157230,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 005/2017": {
     "sigla": "EQUATORIAL",
@@ -1086,7 +1172,8 @@
     "valor_cde": 54077330,
     "participacao_cde": 0.82,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 006/2017": {
     "sigla": "ENERGISA",
@@ -1097,7 +1184,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 007/2017": {
     "sigla": "EQUATORIAL",
@@ -1108,7 +1196,8 @@
     "valor_cde": 16776120,
     "participacao_cde": 0.6,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 008/2017": {
     "sigla": "EQUATORIAL",
@@ -1119,7 +1208,8 @@
     "valor_cde": 105317810,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 009/2017": {
     "sigla": "EQUATORIAL",
@@ -1130,7 +1220,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 010/2017": {
     "sigla": "ENERGISA",
@@ -1141,7 +1232,8 @@
     "valor_cde": 120906120,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 011/2017": {
     "sigla": "ENERGISA",
@@ -1152,7 +1244,8 @@
     "valor_cde": 35964410,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 012/2017": {
     "sigla": "ENERGISA",
@@ -1163,7 +1256,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 013/2017": {
     "sigla": "COELBA",
@@ -1174,7 +1268,8 @@
     "valor_cde": 513990930,
     "participacao_cde": 0.75,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 014/2017": {
     "sigla": "AMAZONAS",
@@ -1185,7 +1280,8 @@
     "valor_cde": 182966740,
     "participacao_cde": 0.9,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 015/2017": {
     "sigla": "EQUATORIAL",
@@ -1196,7 +1292,8 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
   },
   "ECOT 016/2017": {
     "sigla": "EQUATORIAL",
@@ -1207,6 +1304,56 @@
     "valor_cde": 0,
     "participacao_cde": 0.0,
     "tipo_contrato": "LPT",
-    "vigente": "Encerrado"
+    "vigente": "Encerrado",
+    "operacioonal_2023-2025": false
+  },
+  "ECO 034/2026": {
+    "sigla": "ÂMBAR",
+    "cnpj": "02341467000120",
+    "tranche": "11ª Tranche",
+    "uf": "AM",
+    "valor_contrato": 423832700,
+    "valor_cde": 381449430,
+    "participacao_cde": 0.9,
+    "tipo_contrato": "LPT",
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": false
+  },
+  "ECO 045/2026": {
+    "sigla": "ENERGISA",
+    "cnpj": "25086034/0001-71",
+    "tranche": "7ª Tranche",
+    "uf": "TO",
+    "valor_contrato": 42780020,
+    "valor_cde": 34224020,
+    "participacao_cde": 0.9,
+    "tipo_contrato": "LPT",
+    "vigente": "Andamento",
+    "data_operacionalizacao": "2027-06-30",
+    "operacioonal_2023-2025": false
+  },
+  "ECM 029/2026": {
+    "sigla": "ENERGISA",
+    "cnpj": "04065033000170",
+    "tranche": "4ª Tranche",
+    "uf": "AC",
+    "valor_contrato": 83354690,
+    "valor_cde": 75019220,
+    "participacao_cde": 0.9,
+    "tipo_contrato": "MLA",
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": false
+  },
+  "ECM 014/2024": {
+    "sigla": "EQUATORIAL",
+    "cnpj": "04895728000180",
+    "tranche": "5ª Tranche",
+    "uf": "PA",
+    "valor_contrato": 0,
+    "valor_cde": 0,
+    "participacao_cde": 0.0,
+    "tipo_contrato": "MLA",
+    "vigente": "Andamento",
+    "operacioonal_2023-2025": true
   }
 }
