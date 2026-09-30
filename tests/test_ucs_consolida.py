@@ -1,7 +1,9 @@
-"""U4 [AUTO] — consolidação: extrair_linhas (seleção de colunas) e consolidar_csv.
+"""U4/U6 [AUTO] — consolidação (seleção de colunas) e lookup UF/município pelo DTB.
 
 Offline, com a fixture sintética tests/fixtures/exemplo_ucs.csv (mesmo formato do SSRS:
-vírgula, BOM, decimais entre aspas). A corretude dos dados dos 21 é validação [VPN].
+vírgula, BOM, decimais entre aspas). A fixture traz os DOIS formatos de código que a vida
+real apresenta: 7 dígitos (com DV) e 6 dígitos (como o SSRS entrega, sem DV).
+A corretude dos dados dos 23 contratos é validação [VPN].
 """
 
 import csv
@@ -12,29 +14,60 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-from ucs import config, consolida, download
+from ucs import config, consolida, download, municipios
 
 FIXTURE = BASE_DIR / "tests" / "fixtures" / "exemplo_ucs.csv"
 LOG = logging.getLogger("test")
+# DTB mínima para os testes, nas duas chaves — como carregar_dtb monta a real.
+DTB = {"1100015": ("Rondônia", "Alta Floresta D'Oeste"),
+       "110001": ("Rondônia", "Alta Floresta D'Oeste"),
+       "1600550": ("Amapá", "Pracuúba"),
+       "160055": ("Amapá", "Pracuúba")}
 
 
-def test_extrair_linhas_default_so_odi_e_uc():
+# --- U6: normalização do código e carga do DTB --------------------------
+
+def test_normalizar_codigo_tolera_espaco_e_decimal():
+    assert municipios.normalizar_codigo(" 1600550 ") == "1600550"   # espaços nas pontas
+    assert municipios.normalizar_codigo("1600550.0") == "1600550"   # sufixo decimal do Excel
+    assert municipios.normalizar_codigo("160055") == "160055"       # 6 dígitos (formato SSRS)
+    assert municipios.normalizar_codigo("") == ""                   # vazio continua vazio
+    assert municipios.normalizar_codigo("16.00550") == ""           # não-numérico não vira código
+
+
+def test_carregar_dtb_indexa_7_e_6_digitos():
+    """O SSRS entrega 6 dígitos e o DTB tem 7 — as duas chaves têm de resolver."""
+    dtb = municipios.carregar_dtb()
+    assert dtb["1600550"] == ("Amapá", "Pracuúba")       # código completo (com DV)
+    assert dtb["160055"] == ("Amapá", "Pracuúba")        # prefixo sem DV (o que o SSRS manda)
+    assert len(dtb) == 2 * 5571                          # 5.571 municípios × 2 chaves, sem colisão
+
+
+def test_carregar_dtb_arquivo_ausente_falha_alto(tmp_path):
+    """DTB ausente tem de QUEBRAR a rodada (18/09/2026: faltou e a base saiu em branco)."""
+    try:
+        municipios.carregar_dtb(tmp_path / "nao_existe.csv")
+        assert False, "deveria ter levantado FileNotFoundError"
+    except FileNotFoundError as exc:
+        assert "DTB" in str(exc)
+
+
+# --- U4: extração das colunas -------------------------------------------
+
+def test_extrair_linhas_traz_codigo_normalizado():
     linhas = consolida.extrair_linhas(FIXTURE)
     # a fixture tem 2 linhas reais + 1 linha-placeholder vazia (do SSRS) -> 2
     assert len(linhas) == 2
-    # default = só (odi, uc) — sem cod_programa, sem dados de projeto
-    assert linhas[0] == ("10090247", "111")
-    assert linhas[1] == ("10090248", "222")
+    assert linhas[0] == ("10090247", "111", "1100015")   # (odi, uc, código)
+    assert linhas[1] == ("10090248", "222", "160055")
 
 
 def test_extrair_linhas_com_dados_projetos():
     linhas = consolida.extrair_linhas(FIXTURE, incluir_projetos=True)
-    # (odi, uc, cod_projeto, nome_projeto)
-    assert linhas[0] == ("10090247", "111", "374944", "PROJ TESTE A, COM VIRGULA")
+    assert linhas[0] == ("10090247", "111", "1100015", "374944", "PROJ TESTE A, COM VIRGULA")
 
 
 def test_extrair_linhas_ignora_placeholder_vazio():
-    # nenhuma linha extraída deve ter ODI e UC ambos vazios (placeholder do SSRS)
     for odi, uc, *_ in consolida.extrair_linhas(FIXTURE):
         assert odi or uc
 
@@ -44,65 +77,82 @@ def test_extrair_linhas_header_sem_ancora_falha(tmp_path):
     ruim.write_text("a,b,c\n1,2,3\n", encoding="utf-8")
     try:
         consolida.extrair_linhas(ruim)
-        assert False, "deveria ter falhado sem UCP_Num_UC/PPC_Odi"
-    except ValueError:
-        pass
+        assert False, "deveria ter falhado sem as âncoras"
+    except ValueError as exc:
+        assert config.COL_LOCALIZACAO in str(exc)   # a mensagem lista o que faltou
 
 
-def test_consolidar_csv_prefixa_contrato_e_soma(tmp_path):
-    # replica a fixture sob 2 nomes-de-contrato (exercita o encanamento, não os dados)
+# --- U4: consolidação ----------------------------------------------------
+
+def _raw_com(tmp_path, *contratos):
+    """Cria um raw/ com a fixture replicada sob cada nome-de-contrato dado."""
     raw = tmp_path / "raw"
     raw.mkdir()
-    conteudo = FIXTURE.read_bytes()
-    (raw / "ECO_025_2021.csv").write_bytes(conteudo)
-    (raw / "ECO_021_2020.csv").write_bytes(conteudo)
+    for c in contratos:
+        (raw / f"{download.sanitizar_nome(c)}.csv").write_bytes(FIXTURE.read_bytes())
+    return raw
+
+
+def test_consolidar_csv_resolve_uf_municipio_e_prefixa_contrato(tmp_path):
+    raw = _raw_com(tmp_path, "ECO 025/2021", "ECO 021/2020")
     mapa = {"ECO 025/2021": {"codese": "20", "programa": "1520"},
             "ECO 021/2020": {"codese": "156", "programa": "1531"}}
-    saida = tmp_path / "consolidado_ucs.csv"
-    total = consolida.consolidar_csv(mapa, raw, saida, LOG)
+    saida = tmp_path / "consolidado_ucs_modelo.csv"
+    total = consolida.consolidar_csv(mapa, raw, saida, LOG, DTB)
     assert total == 4  # 2 contratos x 2 linhas
 
     with open(saida, encoding=config.CSV_ENCODING, newline="") as fh:
         linhas = list(csv.reader(fh, delimiter=config.CSV_DELIMITADOR))
-    assert linhas[0] == ["contrato", "odi", "uc"]          # cabeçalho default (enxuto)
-    # primeira linha de dados traz o contrato prefixado
-    assert linhas[1] == ["ECO 025/2021", "10090247", "111"]
+    assert linhas[0] == ["contrato", "odi", "uc", "uf", "municipio"]
+    assert linhas[1] == ["ECO 025/2021", "10090247", "111", "Rondônia", "Alta Floresta D'Oeste"]
+    # a 2ª linha vem do código de 6 dígitos — o formato que o SSRS realmente entrega
+    assert linhas[2] == ["ECO 025/2021", "10090248", "222", "Amapá", "Pracuúba"]
 
 
 def test_consolidar_csv_com_dados_projetos(tmp_path):
-    raw = tmp_path / "raw"
-    raw.mkdir()
-    (raw / "ECO_025_2021.csv").write_bytes(FIXTURE.read_bytes())
+    raw = _raw_com(tmp_path, "ECO 025/2021")
     mapa = {"ECO 025/2021": {"codese": "20", "programa": "1520"}}
     saida = tmp_path / "out.csv"
-    consolida.consolidar_csv(mapa, raw, saida, LOG, incluir_projetos=True)
+    consolida.consolidar_csv(mapa, raw, saida, LOG, DTB, incluir_projetos=True)
     with open(saida, encoding=config.CSV_ENCODING, newline="") as fh:
         linhas = list(csv.reader(fh, delimiter=config.CSV_DELIMITADOR))
-    assert linhas[0] == ["contrato", "odi", "uc", "cod_projeto", "nome_projeto"]
-    assert linhas[1] == ["ECO 025/2021", "10090247", "111", "374944", "PROJ TESTE A, COM VIRGULA"]
+    assert linhas[0] == ["contrato", "odi", "uc", "uf", "municipio", "cod_projeto", "nome_projeto"]
+    assert linhas[1] == ["ECO 025/2021", "10090247", "111", "Rondônia", "Alta Floresta D'Oeste",
+                         "374944", "PROJ TESTE A, COM VIRGULA"]
 
 
 def test_consolidar_csv_ignora_contrato_sem_bruto(tmp_path):
-    raw = tmp_path / "raw"
-    raw.mkdir()
-    (raw / "ECO_025_2021.csv").write_bytes(FIXTURE.read_bytes())
+    raw = _raw_com(tmp_path, "ECO 025/2021")
     mapa = {"ECO 025/2021": {"codese": "20", "programa": "1520"},
             "ECO 999/2099": {"codese": "1", "programa": "1"}}  # sem bruto
-    saida = tmp_path / "out.csv"
-    total = consolida.consolidar_csv(mapa, raw, saida, LOG)
+    total = consolida.consolidar_csv(mapa, raw, tmp_path / "out.csv", LOG, DTB)
     assert total == 2  # só o contrato com bruto
 
 
+def test_consolidar_csv_codigo_sem_par_falha_e_preserva_o_anterior(tmp_path):
+    """Código sem par no DTB: aborta, e o consolidado da rodada anterior fica intacto."""
+    raw = _raw_com(tmp_path, "ECO 025/2021")
+    mapa = {"ECO 025/2021": {"codese": "20", "programa": "1520"}}
+    saida = tmp_path / "consolidado_ucs_modelo.csv"
+    saida.write_text("base;anterior\n", encoding=config.CSV_ENCODING)   # rodada anterior
+    try:
+        consolida.consolidar_csv(mapa, raw, saida, LOG, {"9999999": ("X", "Y")})
+        assert False, "deveria ter levantado ValueError"
+    except ValueError as exc:
+        assert "sem par" in str(exc)
+    # o .tmp foi descartado e o arquivo bom da rodada anterior continua lá
+    assert saida.read_text(encoding=config.CSV_ENCODING) == "base;anterior\n"
+    assert not saida.with_name(saida.name + ".tmp").exists()
+
+
 def test_consolidar_sqlite_e_benchmark(tmp_path):
-    raw = tmp_path / "raw"
-    raw.mkdir()
-    (raw / "ECO_025_2021.csv").write_bytes(FIXTURE.read_bytes())
+    raw = _raw_com(tmp_path, "ECO 025/2021")
     mapa = {"ECO 025/2021": {"codese": "20", "programa": "1520"}}
     db = tmp_path / "ucs.db"
-    total = consolida.consolidar_sqlite(mapa, raw, db, LOG)
+    total = consolida.consolidar_sqlite(mapa, raw, db, LOG, DTB)
     assert total == 2 and db.exists()
 
-    saida = tmp_path / "consolidado_ucs.csv"
-    consolida.consolidar_csv(mapa, raw, saida, LOG)
+    saida = tmp_path / "consolidado_ucs_modelo.csv"
+    consolida.consolidar_csv(mapa, raw, saida, LOG, DTB)
     metr = consolida.benchmark(saida, db, LOG)
     assert metr["csv_linhas"] == 2 and metr["db_mb"] >= 0

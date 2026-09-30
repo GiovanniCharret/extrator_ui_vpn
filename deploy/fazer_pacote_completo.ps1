@@ -39,7 +39,7 @@ LEIA-ME PRIMEIRO - deploy completo (Fase 1 LNC + Fase 2 UCs)
 >>> IMPORTANTE - NAO misture versoes <<<
   Se ja existe a pasta antiga na VPN (ex.: extrator2), APAGUE-A POR COMPLETO
   antes de usar este pacote. Em especial, apague as venvs antigas:
-      fase1_lnc\.venv   e   fase2_ucs\.venv
+      fase1_lnc\.venv   e   sqlprdrs-reports\.venv
   Senao os scripts reaproveitam a venv velha (incompleta) e o erro PERSISTE.
 
 1) Extraia este zip numa pasta NOVA e vazia.

@@ -11,14 +11,30 @@ e consolidar ODI/UF/Município em CSV. O laço é dirigido por `base_contratos.j
 (contratos com `vigente != "Encerrado"` **e** que **não** sejam `ECM` — estes são
 contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`).
 
-**Duas fases já construídas e rodando na VPN:**
-- **Fase 1 (`src/`, extração LPT)** — automação de UI do LPT; plano em `planning/PLAN_part1.md`.
-- **Fase 2 (`ucs/`, extração de UCs via SSRS)** — sem UI: baixa cada contrato do relatório
-  SSRS `22.3-UCs_paraAprovacao` (HTTP/SSPI) e consolida ODI↔UC; plano em `planning/PLAN_part2.md`.
+**Duas fases construídas — só a Fase 2 está em operação:**
+- **Fase 1 (`src/`, extração LPT) — APOSENTADA em 17/09/2026** (decisão do usuário): não se usa
+  mais o scraping de UI do sistema legado LNC; ODIs e UCs vêm todas do SQL/SSRS. O código
+  continua no repo, mas **saiu do pacote** (`deploy_minimo/extrator_sqlprdrs.zip` leva só a Fase 2,
+  e o `executar.bat` chama `run_tudo_com_uv_install.ps1 2 --refresh`). Plano histórico em
+  `planning/PLAN_part1.md`. Três testes de F1 estão vermelhos por isso — ver Controle de progresso.
+  **UF/município** (que vinham dos PDFs dela) agora saem do cruzamento com a tabela DTB do IBGE,
+  dentro da própria Fase 2 — ver "Entradas".
+- **Fase 2 (`ucs/`, extração de UCs via SSRS)** — a rodada de produção: sem UI, baixa cada
+  contrato do relatório SSRS `22.3-UCs_paraAprovacao` (HTTP/SSPI) e consolida ODI↔UC; plano em
+  `planning/PLAN_part2.md`. **A Fase 2 NÃO lê `base_contratos.json`** — ela itera pelas chaves do
+  `config/ucs_map.json` (`contratos = list(mapa)`); contrato novo só entra na rodada quando ganha
+  entrada no map (codese/programa, obtidos da recon).
 
-A **Fase 3** prevista (site que valida e reporta avanço a partir de planilhas de beneficiários)
-ainda **não foi planejada** — ver `planning/PLAN_part2.md` e a nota
-`planning/2026-07-08-atualizacao-diaria-entrada-site.md`.
+**Consumidor a jusante (não é desenvolvido aqui):** o site `gerenciador-gclt.com`
+(repo `site_classificacao_beneficiarios_programa`, VPS Hostinger em `/opt/anexov`) valida
+planilhas "Anexo V" contra as bases geradas por este projeto. O contrato de entrega são
+**4 CSVs** em `/opt/anexov/entrada/`: `lpt/consolidado.csv`, `lpt/consolidado_ucs.csv` e os
+gêmeos em `mla/`. **Só o par `lpt/` sai deste projeto** — a base `mla/` é montada
+**manualmente, a partir de planilhas**, e não passa por este sistema (os contratos MLA são os
+`ECM …`, os mesmos que `carregar_vigentes` exclui). O backend recarrega por `mtime`, sem
+restart. Infra e desenho do sync:
+`planning/2026-07-08-atualizacao-diaria-entrada-site.md`. A **Fase 3** (site que valida e
+reporta avanço) **não foi planejada neste repo**.
 
 ## Arquitetura (visão rápida)
 
@@ -35,9 +51,10 @@ programa) → `exportar_pdf.py` (1 PDF por contrato, com as esperas estruturais)
 **Fase 2 — pipeline SSRS sem UI (`ucs/`):** `main.py` (laço/CLI/estado, espelha o da Fase 1) →
 `ssrs_client.py` (protocolo SSRS: sessão SSPI via `requests-negotiate-sspi`, descoberta de
 parâmetros por SOAP `GetItemParameters` com fallback 2005, `render_csv`) → `download.py`
-(1 CSV bruto por contrato, resolvendo `codese`/`programa` pelo map) → `consolida.py`
-(consolida ODI↔UC; SQLite opcional) → `output_ucs/consolidado_ucs.csv`. `recon.py` é a
-recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
+(1 CSV bruto por contrato, resolvendo `codese`/`programa` pelo map) → `municipios.py`
+(DTB do IBGE → `{código: (uf, município)}`) → `consolida.py` (ODI↔UC + localização resolvida;
+SQLite opcional; escreve em `.tmp` e só promove no fim) → `output_ucs/consolidado_ucs_modelo.csv`.
+`recon.py` é a recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
 
 - **Retomada por ESTADO, não por arquivo** (padrão comum às duas fases —
   `src/estado_execucao.json` e `ucs/estado_ucs.json`): `decidir_modo` escolhe sozinho
@@ -79,13 +96,26 @@ recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
 
 - **Entradas F1:** `base_contratos.json` (raiz), `config/programas_map.json`,
   `config/programas_dropdown.json`.
-- **Entradas F2:** `base_contratos.json` (mesma base de contratos vigentes) + `config/ucs_map.json`
-  (contrato → `{codese, concessionaria, programa, programa_label}`; auto-casado 21/21 na recon).
+- **Entradas F2:** `config/ucs_map.json` (contrato → `{codese, concessionaria, programa,
+  programa_label}`, obtido da recon — **é ele que dirige a rodada**, não a base) +
+  `entrada/RELATORIO_DTB_BRASIL_2024_MUNICIPIOS.csv` (tabela DTB do IBGE, 5.571 municípios).
+  **Regra do cruzamento (`ucs/municipios.py`):** o relatório 22.3 não traz UF/município — traz o
+  código IBGE em `PPC_COD_LOCALIZACAO`, que casa com a coluna **H** da DTB (`Código Município
+  Completo`); daí saem `Nome_UF` e `Nome_Município` **verbatim** (sem normalizar caixa/acento).
+  ⚠️ **O SSRS entrega o código com 6 dígitos (sem o dígito verificador) e a DTB tem 7** — por isso
+  `carregar_dtb` indexa cada município pelas DUAS chaves (7 e 6; zero colisões na DTB 2024).
+  Ignorar isso faz 100% das linhas saírem sem UF/município (bug de 18/09/2026).
+  A DTB é **obrigatória** e a regra é tudo-ou-nada: arquivo ausente, ou **qualquer** código sem
+  par, e a consolidação **aborta com exit 1** — grava em `.tmp` e só promove no fim, então o
+  consolidado da rodada anterior nunca é corrompido; o log lista cada código órfão com linhas e
+  contratos afetados.
 - **NÃO são entradas:** `minhas_notas/` (ignorar por completo), `manuais/` (apenas referência
   visual do fluxo manual + origem da fixture), `planning/` (documentação), `bug_fix/` (registros),
   `vpn_resultados/` (resultados trazidos da VPN — insumo de análise, não do pipeline).
 - **Saídas F1:** `output/` (pdf/, logs/, inspecao/, consolidado.csv) — não versionar.
-  **Saídas F2:** `output_ucs/` (raw/, logs/, recon/, consolidado_ucs.csv, ucs.db) — não versionar.
+  **Saídas F2:** `output_ucs/` (raw/, logs/, recon/, **`consolidado_ucs_modelo.csv`**, ucs.db) —
+  não versionar. Colunas da base: `contrato;odi;uc;uf;municipio` (+ `cod_projeto;nome_projeto`
+  com `--dados-projetos`). O nome do arquivo vive em `ucs.config.CSV_CONSOLIDADO_UCS`.
 - O **estado de cada rodada** (`src/estado_execucao.json`, `ucs/estado_ucs.json` — dirigem a
   auto-retomada; ficam fora de `output*/` p/ não confundir com resultados) também não é versionado.
 
@@ -94,13 +124,16 @@ recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
 - Python via **uv**: `uv venv` → `.venv\Scripts\activate` → `uv pip install -r requirements.txt`.
   Nova dependência: `uv pip install X` + `uv pip freeze > requirements.txt` (sem BOM — usar
   `Out-File -Encoding ascii` no PowerShell).
-- Testes offline (DEV ou VPN): `pytest tests/` — separados dos scripts; F1 = `test_f0..f5`,
-  F2 = `test_ucs_*`. Fase única: `pytest tests/test_ucs_ssrs.py -v`.
+- Testes offline (DEV ou VPN): `pytest tests/` — **97 testes: 94 verdes + 3 vermelhos**, todos
+  da Fase 1 aposentada (`test_f0_ambiente::test_config_importa` exige `TIMEOUT_GERACAO >= 300` e o
+  código está em 100; os outros dois pedem `ECO 045/2026` no `programas_map.json`, que não existe
+  porque a F1 saiu de operação). F2 = `test_ucs_*`, **39/39 verdes** — é o que precisa continuar
+  verde. Um arquivo: `pytest tests/test_ucs_ssrs.py -v`; um teste: `pytest tests/ -k nome -v`.
 - Pacote para a VPN: `powershell -ExecutionPolicy Bypass -File deploy\fazer_pacote.ps1 -Versao N`
   (F1); `fazer_pacote_ucs.ps1` / `fazer_pacote_recon.ps1` (F2); `fazer_pacote_completo.ps1`
-  (as duas fases, a partir de `deploy_minimo/`). **Anti-bloqueio de e-mail:** o zip sai com
-  `.ps1`/`.py` renomeados para `*.renomeado.txt` (o filtro corporativo barra zips com scripts);
-  o `LEIA-ME_PRIMEIRO.txt` interno traz o comando único de restauração.
+  (as duas fases, a partir de `deploy_minimo/`). **Transferência DEV → VPN: Google Drive**
+  (não passa mais por e-mail). A antiga convenção de renomear `.ps1`/`.py` para
+  `*.renomeado.txt` contra o filtro corporativo está **caduca** — não usar.
 - Na VPN (usuário): `deploy\instalar.ps1` (setup) e `deploy\coletar.ps1` (zipa `output/` +
   `src/estado_execucao.json` em `resultados_<data>.zip`).
 - Execução na VPN — **modo automático** (refresh/retomar pelo estado); cada `run*.ps1`
@@ -117,13 +150,23 @@ recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
   autocontidas** (cada uma com seu pacote, `config/`, `requirements.txt` mínimo e `COMO_RODAR.html`):
   - `fase1_lnc/` — Fase 1 (extração LPT): `src/` + `scripts/` + `config/programas_*` +
     `base_contratos.json` + `run.ps1`.
-  - `fase2_ucs/` — Fase 2 (UCs via SSRS): `ucs/` + `config/ucs_map.json` + `run_ucs.ps1` +
-    `run_recon.ps1`.
+  - `sqlprdrs-reports/` — Fase 2 (UCs/ODIs via SSRS; nome antigo: `fase2_ucs`): `ucs/` +
+    `config/ucs_map.json` + `entrada/` (tabela DTB) + `run_ucs.ps1` + `run_recon.ps1`.
   - `run_tudo.ps1` (raiz) orquestra as duas, **roteando cada argumento só para a fase que o aceita**
-    (ex.: `--sqlite` só cai na Fase 2); `COMO_USAR.html` documenta o uso e cada argumento. Cada fase
-    cria sua própria venv na 1ª execução.
+    (ex.: `--sqlite` só cai na Fase 2) e **isolando a falha** (uma fase quebrar não derruba a outra);
+    `COMO_USAR.html` documenta o uso e cada argumento. Cada fase cria sua venv na 1ª execução.
+  - **Ponto de entrada do operador (rodada diária na VPN):** `executar.bat` (duplo clique) →
+    `run_tudo_com_uv_install.ps1 --refresh` → `run_tudo.ps1`. O wrapper existe para máquina **sem
+    `uv`**: instala pelo instalador oficial em `%USERPROFILE%\.local\bin` e injeta o caminho no
+    `PATH` **do processo** (o instalador só altera o PATH do registro, que o processo atual não
+    enxerga). Sempre `--refresh` — o operador não escolhe modo.
+  - **`deploy_minimo/` é espelho, não um segundo código:** `src/`, `ucs/`, `config/*.json`,
+    `entrada/`, `base_contratos.json`, `run.ps1` e `run_ucs.ps1` são **cópias byte a byte** das
+    versões da raiz (conferido; mantenha assim). Alterou na raiz? Copie na mesma mudança e confira
+    com `diff -r ucs deploy_minimo/sqlprdrs-reports/ucs` (e `src deploy_minimo/fase1_lnc/src`).
   Referência/versionamento; os builders canônicos dos pacotes da VPN são `deploy\fazer_pacote*.ps1`
-  (`fazer_pacote.ps1` = Fase 1; `fazer_pacote_ucs.ps1` / `fazer_pacote_recon.ps1` = Fase 2).
+  (`fazer_pacote.ps1` = Fase 1; `fazer_pacote_ucs.ps1` / `fazer_pacote_recon.ps1` = Fase 2;
+  `fazer_pacote_completo.ps1` = as duas fases, a partir de `deploy_minimo/`).
 
 ## Regras críticas
 
@@ -132,7 +175,8 @@ recon cega (U0) que descobriu o protocolo — grava tudo em `output_ucs/recon/`.
   URLs/endpoints SOAP, nomes de parâmetro SSRS e caminhos (F2) em **`ucs/config.py`** — nunca
   espalhados pelo código. Esperas estruturais (janela existir/sumir, botão habilitar,
   arquivo estável), nunca sleep fixo como mecanismo principal.
-- A geração do PDF desabilita o botão Imprimir e pode levar ~1 min (`TIMEOUT_GERACAO=300`).
+- A geração do PDF desabilita o botão Imprimir e pode levar ~1 min (`TIMEOUT_GERACAO=100`s;
+  `TIMEOUT_PREVIEW=60`s para a query do Visualizar).
 - Arquivos sempre UTF-8 (`encoding="utf-8"`); CSV em `utf-8-sig` com `;`.
   Scripts `.ps1` em **ASCII puro** (PowerShell 5.1 sem BOM corrompe acentos).
 - `config/programas_map.json` é manual: `{contrato: {programa, tipo}}`. `programa` = texto exato

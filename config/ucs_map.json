@@ -71,6 +71,12 @@
     "programa": "1543",
     "programa_label": "CERCI 3ª TRANCHE"
   },
+  "ECO 034/2026": {
+    "codese": "1026",
+    "concessionaria": "AMAZONAS ENERGIA",
+    "programa": "1534",
+    "programa_label": "Amazonas 11ª Tranche"
+  },
   "ECO 035/2025": {
     "codese": "152",
     "concessionaria": "ENERGISA RONDONIA",
@@ -124,5 +130,11 @@
     "concessionaria": "ENERGISA ACRE",
     "programa": "1550",
     "programa_label": "Acre 9ª Tranche"
+  },
+  "ECO 045/2026": {
+    "codese": "994",
+    "concessionaria": "ENERGISA TOCANTINS",
+    "programa": "1544",
+    "programa_label": "Tocantins 7ª Tranche - Metas Excepcionais"
   }
 }

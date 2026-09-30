@@ -88,6 +88,25 @@ COL_ODI = "PPC_Odi"                   # Ordem de Imobilização (chave de junç�
 # Colunas de projeto — opcionais na saída (via --dados-projetos); usadas só como rastreio.
 COL_COD_PROJETO = "PPC_Cod_Projeto"   # código do projeto
 COL_NOME_PROJETO = "PPC_Nome_Projeto"  # nome/descrição do projeto
+# Código IBGE de 7 dígitos do município da UC. O relatório 22.3 NÃO traz UF/município em
+# texto (30 colunas conferidas) — só este código; UF e município saem do cruzamento com a
+# tabela DTB do IBGE abaixo (regra do projeto, reconfirmada pelo usuário em 18/09/2026).
+COL_LOCALIZACAO = "PPC_COD_LOCALIZACAO"
+
+# --- Tabela de municípios (DTB/IBGE) ------------------------------------
+# Entrada do pipeline (viaja no pacote, em entrada/). É o RELATORIO_DTB_BRASIL_<ano>_
+# MUNICIPIOS do IBGE exportado em CSV ';': linhas 1-6 são título/cabeçalho do relatório,
+# a linha de nomes de coluna vem depois — por isso a leitura PROCURA o cabeçalho pelo nome
+# em vez de fixar a linha (sobrevive à troca do ano-base).
+DTB_CSV = BASE_DIR / "entrada" / "RELATORIO_DTB_BRASIL_2024_MUNICIPIOS.csv"
+DTB_ENCODING = "utf-8-sig"             # exportado com BOM
+DTB_DELIMITADOR = ";"                  # padrão pt-BR
+# Coluna H, com o código de 7 dígitos (inclui o dígito verificador). ATENÇÃO: o SSRS
+# entrega o código com 6 dígitos (SEM o DV) — confirmado no bruto real em 21/07/2026 —,
+# por isso municipios.carregar_dtb indexa cada município pelas DUAS chaves (7 e 6).
+DTB_COL_CODIGO = "Código Município Completo"
+DTB_COL_UF = "Nome_UF"                 # coluna B — UF por extenso ("Amapá"), como registrado
+DTB_COL_MUNICIPIO = "Nome_Município"   # coluna I — nome do município, como registrado
 
 # --- Timeouts (segundos) ------------------------------------------------
 # GET simples (reachability) e POST SOAP (metadados de parâmetros).
@@ -105,5 +124,7 @@ MAX_TENTATIVAS_CONTRATO = 3
 CSV_ENCODING = "utf-8-sig"
 CSV_DELIMITADOR = ";"
 # Base consolidada (enxuta) e banco opcional (derivado dos brutos, regenerável).
-CSV_CONSOLIDADO_UCS = OUTPUT_UCS_DIR / "consolidado_ucs.csv"
+# Sufixo "_modelo" no nome pedido pelo usuário em 18/09/2026 (o consumidor identifica o
+# arquivo por esse nome) — trocar aqui muda a saída de toda a Fase 2.
+CSV_CONSOLIDADO_UCS = OUTPUT_UCS_DIR / "consolidado_ucs_modelo.csv"
 UCS_DB = OUTPUT_UCS_DIR / "ucs.db"
