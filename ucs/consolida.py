@@ -14,9 +14,9 @@ import time                                   # cronometragem do benchmark
 
 from ucs import config, download, municipios  # constantes + caminho_raw + normalização DTB
 
-# Colunas da base. Default = UC↔ODI + localização resolvida via DTB (U6); cod/nome
-# de projeto entram via --dados-projetos.
-COLS_BASE = ["contrato", "odi", "uc", "uf", "municipio"]
+# Colunas da base. Default = UC↔ODI + localização resolvida via DTB (U6) + data de envio;
+# cod/nome de projeto entram via --dados-projetos.
+COLS_BASE = ["contrato", "odi", "uc", "uf", "municipio", "data_envio"]
 COLS_PROJETO = ["cod_projeto", "nome_projeto"]
 
 
@@ -46,8 +46,11 @@ def extrair_linhas(caminho, incluir_projetos=False):
       Fase 2 — exige as âncoras (UC, ODI e PPC_COD_LOCALIZACAO); sem elas o arquivo
                é inválido.
       Fase 3 — por linha (pulando a placeholder vazia do SSRS), extrai (odi, uc,
-               cod_localizacao normalizado) e, se pedido, (cod_projeto, nome_projeto).
-      Saída: lista de tuplas (odi, uc, cod_localizacao[, cod_projeto, nome_projeto]).
+               cod_localizacao normalizado, data_envio) e, se pedido, (cod_projeto,
+               nome_projeto). A data_envio vem DEPOIS do código porque na saída ela fica
+               logo após uf/município — que a consolidação insere no lugar do código.
+      Saída: lista de tuplas (odi, uc, cod_localizacao, data_envio[, cod_projeto,
+             nome_projeto]).
     """
     with open(caminho, encoding=config.CSV_IN_ENCODING, newline="") as fh:  # Fase 1: abre (utf-8-sig tira BOM)
         leitor = csv.reader(fh, delimiter=config.CSV_IN_DELIMITADOR)        # vírgula como separador
@@ -74,7 +77,8 @@ def extrair_linhas(caminho, incluir_projetos=False):
             if not odi and not uc:                     # linha-placeholder do SSRS (programa
                 continue                               #   sem UCs): ODI e UC vazios => ignora
             registro = [odi, uc,                       # base enxuta (sempre)
-                        municipios.normalizar_codigo(pega(linha, config.COL_LOCALIZACAO))]
+                        municipios.normalizar_codigo(pega(linha, config.COL_LOCALIZACAO)),
+                        pega(linha, config.COL_DATA_ENVIO)]   # data de envio, verbatim
             if incluir_projetos:                       # rastreio opcional de projeto
                 registro.append(pega(linha, config.COL_COD_PROJETO))   # código do projeto
                 registro.append(pega(linha, config.COL_NOME_PROJETO))  # nome do projeto
@@ -153,11 +157,12 @@ def consolidar_csv(mapa, raw_dir, caminho_saida, log, dtb, *, incluir_projetos=F
                 log.info("sem bruto para %s — fora da consolidação", contrato)
                 continue
             n_contrato = 0                         # linhas escritas deste contrato
-            for t in extrair_linhas(caminho, incluir_projetos):  # (odi, uc, codigo[, proj])
+            for t in extrair_linhas(caminho, incluir_projetos):  # (odi, uc, codigo, data[, proj])
                 par = dtb.get(t[2])                # t[2] = código normalizado -> (uf, mun)?
                 if par is None:                    # sem par => acumula e NÃO escreve
                     _registrar_ausente(ausentes, t[2], contrato)  # helper compartilhado
-                    continue
+                    continue                       # linha fica fora da base
+                # o código vira (uf, município) e o resto da tupla (data_envio, projeto…) segue
                 escritor.writerow((contrato, t[0], t[1], par[0], par[1], *t[3:]))  # linha final
                 n_contrato += 1                    # soma do contrato
             total += n_contrato                    # soma geral
@@ -203,7 +208,7 @@ def consolidar_sqlite(mapa, raw_dir, db_path, log, dtb, *, incluir_projetos=Fals
             if not caminho.exists():               # sem bruto => pula
                 continue
             lote = []                              # linhas resolvidas deste contrato
-            for t in extrair_linhas(caminho, incluir_projetos):  # (odi, uc, codigo[, proj])
+            for t in extrair_linhas(caminho, incluir_projetos):  # (odi, uc, codigo, data[, proj])
                 par = dtb.get(t[2])                # código -> (uf, municipio)?
                 if par is None:                    # sem par => acumula (helper compartilhado)
                     _registrar_ausente(ausentes, t[2], contrato)  # mesma regra da CSV

@@ -2,7 +2,8 @@
 
 Offline, com a fixture sintética tests/fixtures/exemplo_ucs.csv (mesmo formato do SSRS:
 vírgula, BOM, decimais entre aspas). A fixture traz os DOIS formatos de código que a vida
-real apresenta: 7 dígitos (com DV) e 6 dígitos (como o SSRS entrega, sem DV).
+real apresenta: 7 dígitos (com DV) e 6 dígitos (como o SSRS entrega, sem DV) — e, na
+PPC_Data_Envio, uma linha preenchida e uma vazia (o relatório traz as duas situações).
 A corretude dos dados dos 23 contratos é validação [VPN].
 """
 
@@ -54,17 +55,19 @@ def test_carregar_dtb_arquivo_ausente_falha_alto(tmp_path):
 
 # --- U4: extração das colunas -------------------------------------------
 
-def test_extrair_linhas_traz_codigo_normalizado():
+def test_extrair_linhas_traz_codigo_normalizado_e_data_envio():
     linhas = consolida.extrair_linhas(FIXTURE)
     # a fixture tem 2 linhas reais + 1 linha-placeholder vazia (do SSRS) -> 2
     assert len(linhas) == 2
-    assert linhas[0] == ("10090247", "111", "1100015")   # (odi, uc, código)
-    assert linhas[1] == ("10090248", "222", "160055")
+    assert linhas[0] == ("10090247", "111", "1100015", "15/07/2026")   # (odi, uc, código, data)
+    # data_envio em branco no relatório segue em branco na base (não vira placeholder)
+    assert linhas[1] == ("10090248", "222", "160055", "")
 
 
 def test_extrair_linhas_com_dados_projetos():
     linhas = consolida.extrair_linhas(FIXTURE, incluir_projetos=True)
-    assert linhas[0] == ("10090247", "111", "1100015", "374944", "PROJ TESTE A, COM VIRGULA")
+    assert linhas[0] == ("10090247", "111", "1100015", "15/07/2026",
+                         "374944", "PROJ TESTE A, COM VIRGULA")
 
 
 def test_extrair_linhas_ignora_placeholder_vazio():
@@ -103,10 +106,12 @@ def test_consolidar_csv_resolve_uf_municipio_e_prefixa_contrato(tmp_path):
 
     with open(saida, encoding=config.CSV_ENCODING, newline="") as fh:
         linhas = list(csv.reader(fh, delimiter=config.CSV_DELIMITADOR))
-    assert linhas[0] == ["contrato", "odi", "uc", "uf", "municipio"]
-    assert linhas[1] == ["ECO 025/2021", "10090247", "111", "Rondônia", "Alta Floresta D'Oeste"]
+    assert linhas[0] == ["contrato", "odi", "uc", "uf", "municipio", "data_envio"]
+    # a data de envio sai VERBATIM, logo depois do município
+    assert linhas[1] == ["ECO 025/2021", "10090247", "111", "Rondônia", "Alta Floresta D'Oeste",
+                         "15/07/2026"]
     # a 2ª linha vem do código de 6 dígitos — o formato que o SSRS realmente entrega
-    assert linhas[2] == ["ECO 025/2021", "10090248", "222", "Amapá", "Pracuúba"]
+    assert linhas[2] == ["ECO 025/2021", "10090248", "222", "Amapá", "Pracuúba", ""]
 
 
 def test_consolidar_csv_com_dados_projetos(tmp_path):
@@ -116,9 +121,10 @@ def test_consolidar_csv_com_dados_projetos(tmp_path):
     consolida.consolidar_csv(mapa, raw, saida, LOG, DTB, incluir_projetos=True)
     with open(saida, encoding=config.CSV_ENCODING, newline="") as fh:
         linhas = list(csv.reader(fh, delimiter=config.CSV_DELIMITADOR))
-    assert linhas[0] == ["contrato", "odi", "uc", "uf", "municipio", "cod_projeto", "nome_projeto"]
+    assert linhas[0] == ["contrato", "odi", "uc", "uf", "municipio", "data_envio",
+                         "cod_projeto", "nome_projeto"]
     assert linhas[1] == ["ECO 025/2021", "10090247", "111", "Rondônia", "Alta Floresta D'Oeste",
-                         "374944", "PROJ TESTE A, COM VIRGULA"]
+                         "15/07/2026", "374944", "PROJ TESTE A, COM VIRGULA"]
 
 
 def test_consolidar_csv_ignora_contrato_sem_bruto(tmp_path):

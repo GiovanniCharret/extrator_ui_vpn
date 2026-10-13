@@ -16,12 +16,12 @@ contratos novos fora da base legada LPT; filtro em `contratos.carregar_vigentes`
   mais o scraping de UI do sistema legado LNC; ODIs e UCs vêm todas do SQL/SSRS. O código
   continua no repo, mas **saiu do pacote** (`deploy_minimo/extrator_sqlprdrs.zip` leva só a Fase 2,
   e o `executar.bat` chama `run_tudo_com_uv_install.ps1 2 --refresh`). Plano histórico em
-  `planning/PLAN_part1.md`. Três testes de F1 estão vermelhos por isso — ver Controle de progresso.
+  `planning/finished/PLAN_part1.md`. Três testes de F1 estão vermelhos por isso — ver Controle de progresso.
   **UF/município** (que vinham dos PDFs dela) agora saem do cruzamento com a tabela DTB do IBGE,
   dentro da própria Fase 2 — ver "Entradas".
 - **Fase 2 (`ucs/`, extração de UCs via SSRS)** — a rodada de produção: sem UI, baixa cada
   contrato do relatório SSRS `22.3-UCs_paraAprovacao` (HTTP/SSPI) e consolida ODI↔UC; plano em
-  `planning/PLAN_part2.md`. **A Fase 2 NÃO lê `base_contratos.json`** — ela itera pelas chaves do
+  `planning/finished/PLAN_part2.md`. **A Fase 2 NÃO lê `base_contratos.json`** — ela itera pelas chaves do
   `config/ucs_map.json` (`contratos = list(mapa)`); contrato novo só entra na rodada quando ganha
   entrada no map (codese/programa, obtidos da recon).
 
@@ -33,7 +33,7 @@ gêmeos em `mla/`. **Só o par `lpt/` sai deste projeto** — a base `mla/` é m
 **manualmente, a partir de planilhas**, e não passa por este sistema (os contratos MLA são os
 `ECM …`, os mesmos que `carregar_vigentes` exclui). O backend recarrega por `mtime`, sem
 restart. Infra e desenho do sync:
-`planning/2026-07-08-atualizacao-diaria-entrada-site.md`. A **Fase 3** (site que valida e
+`planning/finished/2026-07-08-atualizacao-diaria-entrada-site.md`. A **Fase 3** (site que valida e
 reporta avanço) **não foi planejada neste repo**.
 
 ## Arquitetura (visão rápida)
@@ -45,8 +45,8 @@ programa) → `exportar_pdf.py` (1 PDF por contrato, com as esperas estruturais)
 `output/consolidado.csv`.
 - **`scripts/`**: `inspecionar_app.py` (dump de telas, F1; também usado em runtime p/ screenshot
   de falha — best-effort) e `gerar_mapeamento.py` (enumera o dropdown, F2). Não são o pipeline.
-- Fase 1 (F0–F6) **concluída**; planos por fase em `planning/PLAN_F1_F3.md` / `PLAN_F5.md`;
-  Controle de progresso em `planning/PLAN_part1.md`.
+- Fase 1 (F0–F6) **concluída**; planos por fase em `planning/finished/PLAN_F1_F3.md` / `PLAN_F5.md`;
+  Controle de progresso em `planning/finished/PLAN_part1.md`.
 
 **Fase 2 — pipeline SSRS sem UI (`ucs/`):** `main.py` (laço/CLI/estado, espelha o da Fase 1) →
 `ssrs_client.py` (protocolo SSRS: sessão SSPI via `requests-negotiate-sspi`, descoberta de
@@ -74,14 +74,15 @@ SQLite opcional; escreve em `.tmp` e só promove no fim) → `output_ucs/consoli
   ao vivo. Uma falha silenciosa desperdiça uma viagem inteira do usuário.
 - Automação de UI na VPN (Fase 1) só funciona com a **sessão RDP aberta, em foco e desbloqueada**.
   A Fase 2 (SSRS) usa a credencial da sessão Windows via SSPI — sem UI.
-- Detalhes completos: `planning/PLAN_part1.md`, seção "Modelo de operação: DEV ↔ VPN".
+- Detalhes completos: `planning/finished/PLAN_part1.md`, seção "Modelo de operação: DEV ↔ VPN".
 
 ## Documentação
 
-- TODA a documentação de planejamento vive em **`planning/`**; os documentos-chave são
-  **`planning/PLAN_part1.md`** (Fase 1) e **`planning/PLAN_part2.md`** (Fase 2), cada um com
-  seu Controle de progresso (status, próximos passos, registro de execução — atualizar a cada
-  sessão de trabalho).
+- TODA a documentação de planejamento vive em **`planning/`**. Os planos foram **arquivados em
+  `planning/finished/` em 30/09/2026** (fases encerradas): `PLAN_part1.md` (Fase 1, aposentada),
+  `PLAN_part2.md` (Fase 2, em operação — tem o Controle de progresso com o histórico até 18/09),
+  `PLAN_F1_F3.md` / `PLAN_F5.md` (planos de fase da F1) e a nota do site. Estando arquivados, não
+  são mais atualizados a cada sessão; mudanças de rumo valem no CLAUDE.md.
 - **Siga `planning/BEHAVIORAL_GUIDELINES.md` em todo desenvolvimento**: pensar antes de codar
   (explicitar premissas, perguntar em vez de assumir), simplicidade primeiro (mínimo de código,
   sem abstrações especulativas), mudanças cirúrgicas (cada linha rastreável ao pedido),
@@ -114,8 +115,11 @@ SQLite opcional; escreve em `.tmp` e só promove no fim) → `output_ucs/consoli
   `vpn_resultados/` (resultados trazidos da VPN — insumo de análise, não do pipeline).
 - **Saídas F1:** `output/` (pdf/, logs/, inspecao/, consolidado.csv) — não versionar.
   **Saídas F2:** `output_ucs/` (raw/, logs/, recon/, **`consolidado_ucs_modelo.csv`**, ucs.db) —
-  não versionar. Colunas da base: `contrato;odi;uc;uf;municipio` (+ `cod_projeto;nome_projeto`
-  com `--dados-projetos`). O nome do arquivo vive em `ucs.config.CSV_CONSOLIDADO_UCS`.
+  não versionar. Colunas da base: `contrato;odi;uc;uf;municipio;data_envio`
+  (+ `cod_projeto;nome_projeto` com `--dados-projetos`). `data_envio` = `PPC_Data_Envio` do
+  relatório, **verbatim** (08/10/2026); como já vem nos brutos, incluí-la só exige
+  `--somente-consolida`, sem re-baixar. O nome do arquivo vive em
+  `ucs.config.CSV_CONSOLIDADO_UCS`.
 - O **estado de cada rodada** (`src/estado_execucao.json`, `ucs/estado_ucs.json` — dirigem a
   auto-retomada; ficam fora de `output*/` p/ não confundir com resultados) também não é versionado.
 

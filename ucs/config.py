@@ -88,6 +88,10 @@ COL_ODI = "PPC_Odi"                   # Ordem de Imobilização (chave de junç�
 # Colunas de projeto — opcionais na saída (via --dados-projetos); usadas só como rastreio.
 COL_COD_PROJETO = "PPC_Cod_Projeto"   # código do projeto
 COL_NOME_PROJETO = "PPC_Nome_Projeto"  # nome/descrição do projeto
+# Data de envio do projeto (16ª das 30 colunas do relatório). Entra na base desde
+# 08/10/2026 a pedido do usuário; vai VERBATIM, como o SSRS registra (mesma regra de
+# uf/município) — se um dia for preciso ordenar/comparar por ela, aí sim normalizar.
+COL_DATA_ENVIO = "PPC_Data_Envio"
 # Código IBGE de 7 dígitos do município da UC. O relatório 22.3 NÃO traz UF/município em
 # texto (30 colunas conferidas) — só este código; UF e município saem do cruzamento com a
 # tabela DTB do IBGE abaixo (regra do projeto, reconfirmada pelo usuário em 18/09/2026).
