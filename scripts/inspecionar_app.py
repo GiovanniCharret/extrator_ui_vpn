@@ -122,6 +122,7 @@ def dump_desktop(nome: str, log) -> None:
                 )
         except Exception:
             pass
+    config.INSPECAO_DIR.mkdir(parents=True, exist_ok=True)  # pasta limpa: garante antes de gravar
     destino = config.INSPECAO_DIR / f"{nome}_desktop.txt"
     destino.write_text("\n".join(linhas), encoding="utf-8")
     log.info("desktop: %d janelas visíveis -> %s", len(linhas), destino.name)
@@ -130,6 +131,7 @@ def dump_desktop(nome: str, log) -> None:
 def screenshot(nome: str, log) -> None:
     import pyautogui
 
+    config.INSPECAO_DIR.mkdir(parents=True, exist_ok=True)  # pasta limpa: garante antes de gravar
     destino = config.INSPECAO_DIR / f"{nome}_tela.png"
     pyautogui.screenshot(str(destino))
     log.info("screenshot -> %s", destino.name)

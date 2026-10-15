@@ -48,7 +48,7 @@
     "tipo": "Eletrificação Rural"
   },
   "ECO 035/2025": {
-    "programa": "Rondônia 8ª Tranche",
+    "programa": "Acre 8ª Tranche Revisão 1",
     "tipo": "Eletrificação Rural"
   },
   "ECO 036/2025": {
@@ -81,6 +81,10 @@
   },
   "ECO 043/2025": {
     "programa": "Acre 9ª Tranche",
+    "tipo": "Eletrificação Rural"
+  },
+  "ECO 034/2026": {
+    "programa": "Amazonas 11ª Tranche",
     "tipo": "Eletrificação Rural"
   }
 }

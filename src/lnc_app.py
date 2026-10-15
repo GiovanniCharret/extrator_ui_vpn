@@ -41,6 +41,52 @@ def _clicar_xy(janela, xy, descricao: str, log: logging.Logger) -> None:
 
 # --- Conexão / limpeza ----------------------------------------------------
 
+def fechar_instancias_existentes(log: logging.Logger) -> None:
+    """Fecha QUALQUER LNC já aberto, para a rodada começar com UMA instância limpa.
+
+    Por que existe: o LNC empilha um painel de filtros novo a cada navegação SEM
+    destruir os anteriores. Numa sessão deixada aberta e navegada à mão, o mesmo
+    controle ('Tipo de Projeto' e seus radios, os combos) aparece dezenas de vezes
+    na árvore win32 — e `child_window(title=..., class_name=...)` casa com TODAS,
+    levantando ElementAmbiguousError (visto na VPN 08/07/2026: 16 cópias do radio
+    'Eletrificação Rural', 8 do TRadioGroup 'Tipo de Projeto'). Reabrir do zero
+    reproduz o caminho já validado (um único painel) e mata a ambiguidade na raiz.
+    Chamado UMA vez, no início da rodada (não por contrato).
+
+    Lógica, do input ao output, em fases:
+      Entrada: log.
+      Fase 1 — enumera as janelas top-level que casam o título principal do LNC.
+      Fase 2 — nada aberto => retorna (a conexão abrirá uma instância nova e limpa).
+      Fase 3 — mata cada processo dono dessas janelas (kill duro: sem diálogo de
+               salvar; o LNC é ferramenta de relatório, não há dado a perder).
+      Fase 4 — espera as janelas sumirem (espera estrutural, até TIMEOUT_ABRIR_APP).
+      Saída: nenhuma (efeito: nenhum LNC aberto ao final).
+    """
+    cands = findwindows.find_elements(                                  # Fase 1: janelas do LNC abertas
+        title_re=config.TITULO_JANELA_PRINCIPAL_RE, backend="win32"
+    )
+    if not cands:                                                       # Fase 2: nada aberto
+        log.info("nenhum LNC aberto — a conexão criará uma instância limpa")
+        return
+    pids = list(dict.fromkeys(c.process_id for c in cands))            # pids únicos (dedup, preserva ordem)
+    log.info("LNC já aberto (pids %s) — fechando p/ evitar painéis duplicados (ambiguidade)", pids)
+    for pid in pids:                                                    # Fase 3: mata cada processo dono
+        try:
+            Application(backend="win32").connect(process=pid).kill(soft=False)  # kill duro (sem WM_CLOSE)
+            log.info("LNC pid=%s fechado", pid)
+        except Exception as e:                                          # nunca derruba a rodada por causa disso
+            log.warning("falha ao fechar LNC pid=%s (seguindo): %s", pid, e)
+    fim = time.monotonic() + config.TIMEOUT_ABRIR_APP                  # Fase 4: janelas precisam sumir
+    while time.monotonic() < fim:                                       # espera estrutural (não sleep fixo)
+        if not findwindows.find_elements(                             # ainda existe janela do LNC?
+            title_re=config.TITULO_JANELA_PRINCIPAL_RE, backend="win32"
+        ):
+            log.info("LNC fechado; pronto para abrir instância limpa")
+            return
+        time.sleep(0.5)                                                # aguarda o processo encerrar de vez
+    log.warning("janelas do LNC ainda presentes após o kill — seguindo mesmo assim")
+
+
 def conectar_ou_abrir(log: logging.Logger):
     """Retorna (app_win32, janela_principal). Conecta por PID; abre o LNC se preciso."""
     cands = findwindows.find_elements(
