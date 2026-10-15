@@ -16,7 +16,7 @@ import sys                                   # utf-8 no stdout / exit code
 import traceback                             # tracebacks completos (execução cega)
 from datetime import datetime                # timestamps do estado/log
 
-from ucs import config, consolida, download, ssrs_client  # módulos da fase
+from ucs import config, consolida, download, municipios, ssrs_client  # módulos da fase
 
 
 # --- Estado (persistência) ----------------------------------------------
@@ -219,7 +219,8 @@ def main(argv=None):
       Fase 2 — carrega/valida o mapa; define o conjunto de contratos e o filtro.
       Fase 3 — se não for --somente-consolida: decide modo, planeja; --dry-run sai aqui;
                senão cria a sessão e executa o laço com persistência incremental.
-      Fase 4 — consolida os brutos no CSV (e, com --sqlite, no banco + benchmark).
+      Fase 4 — carrega o DTB e consolida os brutos no CSV com uf/município (e, com
+               --sqlite, no banco + benchmark).
       Saída: código de saída do processo (0 em sucesso).
     """
     args = _cli(argv if argv is not None else sys.argv[1:])  # Fase 1: CLI
@@ -255,11 +256,20 @@ def main(argv=None):
                  sum(1 for r in resultados if r["status"] == "baixado"),
                  sum(1 for r in resultados if r["status"] == "falha"))
 
-    total = consolida.consolidar_csv(               # Fase 4: base plana (com/sem dados de projeto)
-        mapa, config.RAW_DIR, config.CSV_CONSOLIDADO_UCS, log, incluir_projetos=args.dados_projetos)
-    if args.sqlite:                                 # opcional: banco + benchmark
-        consolida.consolidar_sqlite(
-            mapa, config.RAW_DIR, config.UCS_DB, log, incluir_projetos=args.dados_projetos)
+    try:                                            # Fase 4: consolidação (entradas obrigatórias)
+        dtb = municipios.carregar_dtb()             # DTB em memória (falha cedo se faltar)
+        log.info("DTB: %d chaves (7 e 6 dígitos) de %s",  # execução cega: tamanho no log
+                 len(dtb), config.DTB_CSV.name)
+        total = consolida.consolidar_csv(           # base plana (com uf/município resolvidos)
+            mapa, config.RAW_DIR, config.CSV_CONSOLIDADO_UCS, log, dtb,
+            incluir_projetos=args.dados_projetos)
+        if args.sqlite:                             # opcional: banco + benchmark
+            consolida.consolidar_sqlite(
+                mapa, config.RAW_DIR, config.UCS_DB, log, dtb,
+                incluir_projetos=args.dados_projetos)
+    except (FileNotFoundError, ValueError) as exc:  # DTB ausente/inválido ou código sem par:
+        log.error("CONSOLIDAÇÃO ABORTADA: %s", exc)  #   falha ALTA (o operador não pode ver
+        return 1                                    #   "sucesso" com a base sem localização)
         consolida.benchmark(config.CSV_CONSOLIDADO_UCS, config.UCS_DB, log)
     log.info("=== Fase 2 concluída — %d linhas em %s ===", total, config.CSV_CONSOLIDADO_UCS.name)
     return 0                                        # saída: sucesso

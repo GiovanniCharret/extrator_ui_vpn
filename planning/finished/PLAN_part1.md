@@ -37,8 +37,18 @@ Legenda (de `planning/PROJECT_BUILDING.md`): `[ ]` pendente · `[x]` concluído 
 
 ### Próximos passos
 
-1. **Validação VPN do `pacote_v13`** (Roteiro 5) — fecha a F5/F6: valida na VPN o filtro "Tipo de Projeto" (passo 5.0, ECO 029 = Fonte Alternativa), a auto-retomada, e uma rodada completa dos 21. Fixar a impressora padrão no `run.ps1` (resto da F6).
-2. **Fase 2 (SQL — UCs)** — **só após decidir o local do projeto** (ver "Fases futuras"). Não planejada ainda.
+**Nenhum — a Fase 1 foi APOSENTADA em 17/09/2026** (decisão do usuário): o scraping de UI do LNC
+não é mais usado; ODIs e UCs vêm todas do SQL/SSRS. Consequências registradas:
+
+- O código (`src/`, `scripts/`) continua no repositório, mas **saiu do pacote da VPN**
+  (`extrator_sqlprdrs.zip` leva só a Fase 2) e o `executar.bat` chama apenas a Fase 2.
+- **3 testes de F1 ficaram vermelhos** e assim permanecem: `test_f0_ambiente::test_config_importa`
+  (exige `TIMEOUT_GERACAO >= 300`, o código está em 100) e dois que exigem `ECO 045/2026` no
+  `programas_map.json` (contrato novo que nunca foi mapeado, porque a fase saiu de operação).
+  Quando a aposentadoria for definitiva, arquivar esses testes junto com a fase.
+- **UF/município**, que vinham dos PDFs desta fase, agora saem do cruzamento do código IBGE do
+  relatório SSRS com a tabela DTB do IBGE — ver `ucs/municipios.py` e `planning/PLAN_part2.md`.
+- O trabalho ativo do projeto está em **`planning/PLAN_part2.md`**.
 
 > **Marco — Fase 1 (extração LPT) encerrada e commitada em 17/06/2026.** O pipeline F0–F5 está
 > completo no DEV (suíte 58/58); resta a validação final na VPN com o `pacote_v13` (Roteiro 5) e o
@@ -62,6 +72,11 @@ Legenda (de `planning/PROJECT_BUILDING.md`): `[ ]` pendente · `[x]` concluído 
   (c) compara os avanços com os dados anteriores → **report de avanço de tipo de cliente por projeto**.
 
 ### Registro de execução
+
+- **17/09/2026** — **Fase 1 aposentada pelo usuário.** "Não usamos mais os scripts que fazem
+  scrapping via sistema legado LNC. Todas as ODIs e UCs são baixadas via sql em
+  http://sqlprdrs/Reports". A partir daqui, nada é desenvolvido nesta fase; o registro do trabalho
+  ativo passa a ser o `PLAN_part2.md`.
 
 | Data | O que foi feito |
 |---|---|

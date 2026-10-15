@@ -1,8 +1,10 @@
 # Plano de implementação — Fase 2 (`ucs/`): extração das UCs via SSRS
 
-> **Para revisão minuciosa do usuário antes de codar.** Versão visual: `planning/PLAN_part2.html`.
-> Contexto-mãe: `planning/PLAN_part1.md` (Fase 1, extração LPT — encerrada). Esta fase é um
-> **pacote novo e independente** (`ucs/`): não toca o LNC nem o `src/` da Fase 1.
+> **Fase EM OPERAÇÃO desde 18/06/2026 — é o único pipeline ativo do projeto.** Versão visual:
+> `planning/PLAN_part2.html`. Contexto-mãe: `planning/PLAN_part1.md` (Fase 1, extração LPT —
+> **aposentada em 17/09/2026**). Este é um pacote independente (`ucs/`): não toca o LNC nem o
+> `src/`. O plano abaixo é o registro do que foi decidido e construído; o **Controle de progresso**
+> no fim é a fonte da verdade do andamento.
 
 ---
 
@@ -41,16 +43,17 @@ logado em `output/`) mas **nenhum** de seu código de UI.
 
 | | |
 |---|---|
-| Pacote novo | `ucs/` (`config.py`, `recon.py`, `ssrs_client.py`, `download.py`, `consolida.py`, `main.py`) |
-| Config nova | `config/ucs_map.json` — `{contrato: {concessionaria, programa}}` (Fase 1 fica intacta) |
-| Saídas (não versionar) | `output_ucs/` → `raw/<contrato>.csv`, `consolidado_ucs.csv`, `ucs.db` (opcional), `logs/`, `recon/` |
+| Pacote novo | `ucs/` (`config.py`, `recon.py`, `ssrs_client.py`, `download.py`, `municipios.py`, `consolida.py`, `main.py`) |
+| Config nova | `config/ucs_map.json` — `{contrato: {codese, concessionaria, programa, programa_label}}`; **é ele que dirige a rodada** (a Fase 2 não lê `base_contratos.json`) |
+| Entrada nova | `entrada/RELATORIO_DTB_BRASIL_2024_MUNICIPIOS.csv` (DTB/IBGE) — obrigatória, viaja no pacote |
+| Saídas (não versionar) | `output_ucs/` → `raw/<contrato>.csv`, **`consolidado_ucs_modelo.csv`** (`contrato;odi;uc;uf;municipio`), `ucs.db` (opcional), `logs/`, `recon/` |
 | Estado da rodada | `ucs/estado_ucs.json` (espelha `src/estado_execucao.json`) |
 | Runner | `run_ucs.ps1` (auto-bootstrap da venv, espelha `run.ps1`) |
 | Deps novas | `requests`, `requests-negotiate-sspi` (SQLite é stdlib) |
 | Método de download | **decidido na recon (U0)**: HTTP/SSPI (alvo) com fallback navegador |
 | Fonte da verdade | **CSV bruto por contrato** (`raw/`) — o banco é derivado e regenerável |
 | Decisão de storage | **deferida** p/ depois do benchmark com volume real (CSV × SQLite × Postgres) |
-| Entrega da fase | `.\run_ucs.ps1` percorre os 21 contratos, baixa, consolida e reporta na VPN |
+| Entrega da fase | `.\run_ucs.ps1` percorre os **23** contratos do `ucs_map.json`, baixa, resolve UF/município pelo DTB, consolida e reporta na VPN |
 
 ---
 
@@ -119,7 +122,8 @@ ucs/
   recon.py         # U0: testa HTTP/SSPI, descobre params, enumera dropdowns, salva CSV amostra → output_ucs/recon/
   ssrs_client.py   # ponto ÚNICO do "como baixar": render_csv(concessionaria, programa) -> bytes (SSPI)
   download.py      # por contrato: resolve map → render → grava raw/<contrato>.csv (+ valida header)
-  consolida.py     # streaming dos brutos → consolidado_ucs.csv (+ SQLite opcional) + benchmark
+  municipios.py    # U6: DTB do IBGE → {código: (uf, município)}, indexado por 7 E 6 dígitos
+  consolida.py     # streaming dos brutos + DTB → consolidado_ucs_modelo.csv (+ SQLite opcional)
   main.py          # laço/CLI/estado (refresh|retomar), espelha src/main.py
 ```
 
@@ -180,8 +184,9 @@ partir de config+map é unit-testada **sem rede**. **[VPN]:** baixa 1–2 contra
 
 ### U4 — `consolida` (base enxuta + SQLite opcional + benchmark) `[AUTO]`
 
-Streaming (stdlib `csv`, baixa memória) dos `raw/*.csv` → seleção das **colunas enxutas** (definidas
-pós-U0; provavelmente `contrato, ODI, UC` + rastreio) → `consolidado_ucs.csv`. Carga **opcional** em
+Streaming (stdlib `csv`, baixa memória) dos `raw/*.csv` → seleção das **colunas enxutas** →
+`consolidado_ucs_modelo.csv`. _(Forma final, 18/09/2026: `contrato;odi;uc;uf;municipio`, com
+`;cod_projeto;nome_projeto` sob `--dados-projetos`; uf/município resolvidos pelo DTB — ver U6.)_ Carga **opcional** em
 `ucs.db` (sqlite3) com índice em ODI/UC. **Helper de benchmark** reporta linhas/tamanho/tempo de
 query → decide CSV × SQLite × Postgres com número real. **Sucesso [AUTO]:** fixture (amostra da U0)
 → base esperada; spot-check de uma `(contrato, odi, uc)` conhecida.
@@ -200,7 +205,8 @@ query → decide CSV × SQLite × Postgres com número real. **Sucesso [AUTO]:**
 
 1. `pytest tests/test_ucs_*.py` verde (U1, U2, U3-URL, U4 — offline).
 2. `[VPN]` recon (U0) traz params + dropdowns + 1 CSV amostra.
-3. `[VPN]` rodada completa: 21 `raw/<contrato>.csv` + `consolidado_ucs.csv`; zero falhas (ou
+3. `[VPN]` rodada completa: um `raw/<contrato>.csv` por contrato do map (**23** em 18/09/2026) +
+   `consolidado_ucs_modelo.csv`; zero falhas (ou
    `desistido` registrado com motivo); retomada após interrupção funciona.
 4. Benchmark registra volume real → decisão de storage documentada no Controle de progresso.
 
@@ -230,16 +236,61 @@ query → decide CSV × SQLite × Postgres com número real. **Sucesso [AUTO]:**
 | U2 | `config/ucs_map.json` + validação | `[x]` DEV | parte do suite | 18/06/2026 | **21/21 contratos casados**; `download.validar_mapeamento` + teste do map real |
 | U3 | `ssrs_client` + `download` | `[x]` DEV | em test_ucs_* | 18/06/2026 | `download.baixar` (render CSV por codese/programa + validação + grava bruto); render já provado na recon |
 | U4 | `consolida` + SQLite opcional + benchmark | `[x]` DEV | 5 testes | 18/06/2026 | `extrair_linhas`/`consolidar_csv` (streaming) + `consolidar_sqlite` + `benchmark`; base UC↔ODI (sem município — vem da Fase 1) |
-| U5 | `main` + `run_ucs.ps1` | `[x]` DEV | 11 testes | 18/06/2026 | laço/estado/retomada (espelha Fase 1) + CLI (`--dry-run/--contratos/--refresh/--somente-consolida/--sqlite/--recon`); `run_ucs.ps1` auto-bootstrap; pacote `fazer_pacote_ucs.ps1`. **Aguarda validação VPN** |
+| U5 | `main` + `run_ucs.ps1` | `[x]` DEV+VPN | 11 testes | 18/06/2026 | laço/estado/retomada (espelha Fase 1) + CLI (`--dry-run/--contratos/--refresh/--somente-consolida/--sqlite/--recon`); `run_ucs.ps1` auto-bootstrap; pacote `fazer_pacote_ucs.ps1` |
+| U6 | `ucs/municipios.py` — UF/município pelo DTB | `[x]` DEV+VPN | 4 testes | 18/09/2026 | O 22.3 só traz o **código IBGE** (`PPC_COD_LOCALIZACAO`); UF/município vêm do DTB. **O SSRS entrega 6 dígitos (sem DV) e o DTB tem 7** → `carregar_dtb` indexa as DUAS chaves (0 colisões em 2024). Regra tudo-ou-nada: código sem par ⇒ relatório completo no log e a rodada **não grava** (escreve `.tmp` e só promove no fim) |
+| U7 | Pacote `extrator_sqlprdrs.zip` (só Fase 2) | `[x]` VPN | — | 18/09/2026 | Fase 1 fora do pacote; pasta `deploy_minimo/sqlprdrs-reports/` (ex-`fase2_ucs`) com `entrada/` dentro; `executar.bat` chama `run_tudo_com_uv_install.ps1 2 --refresh`. Rodada validada pelo usuário |
 
 ### Próximos passos
 
-1. **Revisão deste plano pelo usuário.** Nada de código antes do "aprovado".
-2. Após aprovado: implementar **U0 (recon)** primeiro e empacotar para a VPN (recon-first).
-3. Com o retorno da recon: fechar U1–U5.
+1. **Convergir o repo com o pacote `legado.zip`** (versão que rodou na VPN em julho/2026 e nunca
+   voltou ao repositório). Dele já vieram o `municipios.py` e a consolidação com `.tmp`; falta
+   diffar o resto — o legado ainda difere no **bootstrap** (Python do sistema + `pip` +
+   `extrair_ucs.bat`, que instala o Python, em vez do `uv`), traz `uvicorn` no requirements e
+   documentação de operador (`LEIA-ME.txt`, quadro "EXTRACAO OK / TERMINOU COM ERRO").
+   **Decisão pendente do usuário:** bootstrap fica no `uv` ou converge para o `.bat` do legado?
+2. **Nome do arquivo entregue ao site.** A saída agora é `consolidado_ucs_modelo.csv`, mas o site
+   espera `entrada/lpt/consolidado_ucs.csv` — alinhar o nome (ou renomear no envio).
+3. **Sync DEV→VPS.** O `run_sync.ps1` saiu do `deploy_minimo/`; hoje o envio dos CSVs ao VPS é
+   manual. Definir onde essa peça passa a viver.
+4. **Bug conhecido (aberto):** se o `uv venv` for interrompido, sobra um `.venv` parcial e toda
+   execução seguinte morre com `A directory already exists at: .venv`. Fix: detectar venv sem
+   `python.exe` e recriar com `--clear`.
+5. **`ECO 034/2026`** (ÂMBAR / Amazonas 11ª) baixa 0 linhas — provável contrato ainda sem UCs,
+   como `ECO 042/2025`. É o único mapeamento sem confirmação visual do usuário.
 
 ### Registro de execução (mais recente no topo)
 
+- **18/09/2026 (tarde)** — **BUG DO MUNICÍPIO RESOLVIDO: o SSRS manda 6 dígitos, o DTB tem 7.**
+  As rodadas (2) e (3) vieram com uf/município vazios em **100%** das linhas. O usuário trouxe o
+  `legado.zip` — o pacote que gerou o modelo bom, que rodou na VPN em julho/2026 e **nunca voltou
+  ao repositório**. Nele está o `ucs/municipios.py` com a regra que faltava: o código do município
+  vem **sem o dígito verificador** (6 dígitos), então o DTB precisa ser indexado pelas duas chaves.
+  Adotado o legado nessa parte (mais maduro que a minha versão): normalização do código (espaços,
+  `.0` do Excel), detecção de colisão de prefixo, escrita em `.tmp` com promoção atômica e
+  relatório completo dos códigos órfãos. Validado no pacote com um bruto de 6 dígitos
+  (`160055` → Amapá/Pracuúba) e **confirmado pelo usuário na VPN**. Suíte 94/97 (as 3 vermelhas
+  são da Fase 1 aposentada). Pacote `extrator_sqlprdrs.zip`.
+- **18/09/2026 (manhã)** — **UF/município entram na base + renomeações.** Regra do cruzamento
+  recuperada pelo usuário: `PPC_COD_LOCALIZACAO` × coluna **H** do DTB. Conferência: os **1.010**
+  pares (uf, município) do modelo existem todos no DTB. A base passa a
+  `contrato;odi;uc;uf;municipio`; saída renomeada para **`consolidado_ucs_modelo.csv`**; pasta do
+  pacote `fase2_ucs` → **`sqlprdrs-reports`**; zip → **`extrator_sqlprdrs.zip`**; `entrada/` (DTB)
+  passa a viajar dentro da pasta da fase. **Erro meu corrigido no caminho:** a DTB estava como
+  opcional (avisava no log e seguia) — entrada obrigatória ausente virava base inteira em branco
+  com exit 0 e "CONCLUIDO COM SUCESSO" na tela; agora falha alto.
+- **17/09/2026** — **Contratos novos + Fase 1 aposentada.** Recon rodada de novo na VPN: achados
+  `ENERGISA TOCANTINS`=994 / `Tocantins 7ª Tranche - Metas Excepcionais`=1544 (`ECO 045/2026`) e
+  `AMAZONAS ENERGIA`=1026 / `Amazonas 11ª Tranche`=1534 (`ECO 034/2026`); os 21 antigos
+  reconferidos sem desvio → `ucs_map.json` com **23 contratos**. O usuário informou que o scraping
+  do LNC **não é mais usado** (ODIs e UCs vêm todas do SQL/SSRS) → o pacote passou a levar só a
+  Fase 2. Teste obsoleto (`len(mapa) == 21`) virou invariante de cobertura: todo contrato vigente
+  precisa estar no map — teria pego o `ECO 034/2026` ausente.
+- **15–16/09/2026** — **Fase 2 parada por credencial do SSRS, não por bug nosso.** Todos os
+  contratos falhavam com HTTP 500 + página HTML. O Report Manager revelou a cadeia
+  `rsProcessingAborted` → `rsErrorImpersonatingUser` → `rsLogonFailed` no data source **`LNC_EXT`**
+  (credencial armazenada expirada). Corrigido pelos engenheiros do SSRS; nada mudou do nosso lado.
+  **Lição:** a exceção truncava o corpo do erro em 300 bytes, que só continham o `<head>` — a
+  mensagem real ficava invisível. Se a Fase 2 falhar em bloco de novo, suspeitar disto primeiro.
 - **19/06/2026** — **Stack rodando na VPN (32 bits) OK.** Último ajuste: a Fase 1 não criava
   `output/pdf/` numa pasta nova/limpa — o `mkdir` morava em `exportar_pdf.caminho_saida()`, que é
   **pulado** quando o `main` passa o `destino` pronto; o diálogo Print-to-PDF então caía na última

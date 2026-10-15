@@ -6,6 +6,24 @@
 > Descreve o que precisa ser desenvolvido AQUI para manter as bases do site
 > atualizadas diariamente.
 
+## Situação em 18/09/2026 (atualização deste projeto)
+
+> Nota acrescentada pelo agente de `atualizacao_clientes`. O documento abaixo é o pedido
+> original do agente do site, preservado como veio. O que mudou de lá para cá:
+>
+> - **O `run_sync.ps1` não existe mais** no `deploy_minimo/` (removido do working tree em
+>   13/07/2026). O envio dos 4 CSVs ao VPS está **manual** hoje; falta decidir onde essa peça
+>   passa a viver — se aqui ou no projeto do site.
+> - **A Fase 1 (scraping do LNC) foi aposentada em 17/09/2026.** O par `lpt/consolidado.csv`
+>   (ODI;UF;município) deixou de ser produzido por ela; UF e município agora saem dentro da
+>   própria Fase 2, cruzando o código IBGE do relatório SSRS com a tabela DTB do IBGE.
+> - **A base entregue mudou de nome e de forma:** hoje é `consolidado_ucs_modelo.csv`, com as
+>   colunas `contrato;odi;uc;uf;municipio`. O site espera `entrada/lpt/consolidado_ucs.csv` —
+>   **este nome precisa ser alinhado** entre os dois projetos.
+> - **A base `mla/` é montada manualmente, a partir de planilhas**, e não passa por este
+>   sistema (confirmado pelo usuário em 15/09/2026).
+> - O pacote da VPN agora se chama `extrator_sqlprdrs.zip` e contém só a Fase 2.
+
 ## Contexto
 
 O site **https://gerenciador-gclt.com** (repo `site_classificacao_beneficiarios_programa`,

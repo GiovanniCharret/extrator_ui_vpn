@@ -71,7 +71,7 @@ Get-ChildItem -Recurse -Filter "*.renomeado.txt" | Rename-Item -NewName { `$_.Na
    .\run_ucs.ps1 --contratos "ECO 025/2021,ECO 021/2020"
 
 4) TRAGA DE VOLTA a pasta output_ucs\ INTEIRA:
-   - output_ucs\consolidado_ucs.csv  (a base enxuta contrato;odi;uc;...)
+   - output_ucs\consolidado_ucs_modelo.csv  (a base contrato;odi;uc;uf;municipio;...)
    - output_ucs\raw\*.csv            (os brutos por contrato)
    - output_ucs\logs\*.log           (tracebacks/medidas)
    - output_ucs\ucs.db               (se usou --sqlite)

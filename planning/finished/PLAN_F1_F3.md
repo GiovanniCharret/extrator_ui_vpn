@@ -1,5 +1,10 @@
 # Plano de implementação — `lnc_app.py` (F1) + `exportar_pdf.py` (F3)
 
+> ⚠️ **DOCUMENTO HISTÓRICO.** A Fase 1 (scraping de UI do LNC) foi **aposentada em 17/09/2026**:
+> ODIs e UCs passaram a vir todas do SQL/SSRS (Fase 2, `ucs/`). O código continua no repo e este
+> plano é mantido como registro do que foi construído — não como trabalho em andamento. Ver
+> `planning/PLAN_part2.md`.
+
 > **Para revisão do usuário antes de codar.** Versão visual: `planning/PLAN_F1_F3.html`.
 > Steps usam checkbox (`- [ ]`) para acompanhamento. Contexto-mãe: `planning/PLAN.md`
 > (seções 4–5) e os seletores reais em `src/config.py` (fixados das viagens B1–B5).
