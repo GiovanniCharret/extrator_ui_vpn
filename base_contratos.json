@@ -1319,6 +1319,20 @@
     "vigente": "Andamento",
     "operacional_2023-2025": false
   },
+  "ECO 044/2026": {
+    "sigla": "CEMIG",
+    "cnpj": "06981180000116",
+    "tranche": "5ª Tranche",
+    "uf": "MG",
+    "valor_contrato": 0,
+    "valor_cde": 0,
+    "participacao_cde": 0.0,
+    "tipo_contrato": "LPT",
+    "vigente": "Andamento",
+    "data_operacionalizacao": "2027-06-30",
+    "qtd_ucs": 628,
+    "operacional_2023-2025": false
+  },
   "ECO 045/2026": {
     "sigla": "ENERGISA",
     "cnpj": "25086034/0001-71",
